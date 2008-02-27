@@ -1,19 +1,29 @@
 import sys
-sys.path.insert(0,'/home/tarbox/workspace/external/IbPy')
-sys.path.insert(0,'/home/tarbox/workspace/pyWorking/ght/playIbpy')
 
 import sys
 from PyQt4 import QtGui, QtScript
 from PyQt4.QtCore import QTimer, SIGNAL
 
-#from twisted.internet import reactor
-
 def testReactor():
     print 'tick...'
+
+def testReactor2():
+    print 'click...'
+    
+reactorInstalled = False
+
+localReactor = None
+    
+def buttonClick():
+    if reactorInstalled:
+        localReactor.callLater(0.0,testReactor2)
+    else:
+        doReactorInstall()
 
 def doReactorInstall():
     global reactorInstalled
     if reactorInstalled:
+        reactor.callLater(0.0,testReactor2)
         return
     else:
         reactorInstalled=True
@@ -25,10 +35,10 @@ def doReactorInstall():
     log.startLogging(sys.stdout)
     task.LoopingCall(testReactor).start(1.0)
     from twisted.internet import reactor, task
-    import generatorSupport
-    reactor.callWhenRunning(generatorSupport.doTest)
     reactor.returnRun()
     log.msg('returning from run')
+    global localReactor
+    localReactor=reactor
 
 app = QtGui.QApplication(sys.argv)
 
@@ -38,17 +48,11 @@ button = QtGui.QPushButton()
 scriptButton = engine.newQObject(button)
 engine.globalObject().setProperty("button", scriptButton)
 
-app.connect(button, SIGNAL("clicked()"), doReactorInstall)
+app.connect(button, SIGNAL("clicked()"), buttonClick)
 
 engine.evaluate("button.text = 'Hello World!'")
 engine.evaluate("button.styleSheet = 'font-style: italic'")
 engine.evaluate("button.show()")
     
-reactorInstalled = False
-
-#QTimer.singleShot(10,doReactorInstall)
-
-#reactor.run()
-
 sys.exit(app.exec_())
 
