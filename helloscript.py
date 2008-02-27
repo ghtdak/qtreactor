@@ -37,6 +37,8 @@ def doReactorInstall():
     from twisted.internet import reactor, task
     reactor.returnRun()
     log.msg('returning from run')
+    """ should really figure out what happens when
+    reactor is imported methinks """
     global localReactor
     localReactor=reactor
 
