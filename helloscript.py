@@ -28,7 +28,7 @@ def doReactorInstall():
     else:
         reactorInstalled=True
     print "installing reactor"
-    from Core import qt4reactor
+    import qt4reactor
     qt4reactor.install(app)
     from twisted.internet import reactor, task
     from twisted.python import log
