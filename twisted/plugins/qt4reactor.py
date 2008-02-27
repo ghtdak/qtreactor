@@ -19,7 +19,6 @@ Maintainer: U{Itamar Shtull-Trauring<mailto:twisted@itamarst.org>}
 Port to QT4: U{Gabe Rudy<mailto:rudy@goldenhelix.com>}
 """
 
-__all__ = ['install']
 
 # System Imports
 from PyQt4.QtCore import QSocketNotifier, QObject, SIGNAL, QTimer
@@ -216,3 +215,5 @@ def install(app=None):
 
     reactor = QTReactor(app=app)
     main.installReactor(reactor)
+
+__all__ = ['install']
