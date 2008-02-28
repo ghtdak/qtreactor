@@ -23,7 +23,7 @@ Port to QT4: U{Gabe Rudy<mailto:rudy@goldenhelix.com>}
 # System Imports
 from PyQt4.QtCore import QSocketNotifier, QObject, SIGNAL, QTimer,QThread
 from PyQt4.QtGui import QApplication
-import sys
+import sys, time
 
 # Twisted Imports
 from twisted.python import log, failure
@@ -35,23 +35,30 @@ hasReader = reads.has_key
 hasWriter = writes.has_key
 
 
-class TwistedSocketNotifier(QSocketNotifier):
+class TwistedSocketNotifier(object):
     '''Connection between an fd event and reader/writer callbacks'''
 
     def __init__(self, reactor, watcher, type):
-        QSocketNotifier.__init__(self, watcher.fileno(), type)
         self.reactor = reactor
         self.watcher = watcher
         self.fn = None
+        self.qNotifier=None
         if type == QSocketNotifier.Read:
             self.fn = self.read
         elif type == QSocketNotifier.Write:
             self.fn = self.write
-        QObject.connect(self, SIGNAL("activated(int)"), self.fn)
+        reactor.callLater(0.0,self.qsocketNailup,
+                          watcher.fileno(), type, self.fn)
+    
+    def qsocketNailup(self, fileno, type, fn):
+
+        self.qNotifier = QSocketNotifier(fileno, type)
+        QObject.connect(self.qNotifier, SIGNAL("activated(int)"), fn)
 
     def shutdown(self):
-        QObject.disconnect(self, SIGNAL("activated(int)"), self.fn)
-        self.setEnabled(0)
+        if self.qNotifier != None:
+            QObject.disconnect(self.qNotifier, SIGNAL("activated(int)"), self.fn)
+            self.qNotifier.setEnabled(0)
         self.fn = self.watcher = None
 
     def read(self, sock):
@@ -66,12 +73,12 @@ class TwistedSocketNotifier(QSocketNotifier):
             log.deferr()
         if why:
             self.reactor._disconnectSelectable(w, why, True)
-        self.reactor.iterate()
+        self.reactor.simulate()
 
     def write(self, sock):
         why = None
         w = self.watcher
-        self.setEnabled(0)
+        self.qNotifier.setEnabled(0)
         try:
             log.msg('writing...')
             why = w.doWrite()
@@ -88,7 +95,7 @@ class TwistedSocketNotifier(QSocketNotifier):
                 log.deferr()
         elif self.watcher:
             self.setEnabled(1)
-        self.reactor.iterate()
+        self.reactor.simulate()
 
 
 class QTReactor(posixbase.PosixReactorBase):
@@ -98,15 +105,15 @@ class QTReactor(posixbase.PosixReactorBase):
     # entered through .iterate()
     _crashCall = None
 
-    _timer = None
-
     def __init__(self, app=None):
-        self.running = 0
+#===============================================================================
+#        self.running = 0
+#===============================================================================
         posixbase.PosixReactorBase.__init__(self)
         if app is None:
             app = QApplication([])
         self.qApp = app
-        self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
+        self.qAppRunning=False
 
     def addReader(self, reader):
         if not hasReader(reader):
@@ -137,9 +144,10 @@ class QTReactor(posixbase.PosixReactorBase):
         self.qApp.processEvents()
 
     def simulate(self):
-        if self._timer is not None:
-            self._timer.stop()
-            self._timer = None
+#===============================================================================
+#        if self.running == False:
+#            return
+#===============================================================================
 
 #===============================================================================
 #        if not self.running:
@@ -149,69 +157,61 @@ class QTReactor(posixbase.PosixReactorBase):
 #        self.runUntilCurrent()
 #===============================================================================
 
-        #log.msg('entering runUntilCurrent')
         self.runUntilCurrent()
-        #log.msg('leaving runUntilCurrent')
 
-#===============================================================================
-#        if self._crashCall is not None:
-#            self._crashCall.reset(0)
-#===============================================================================
-
-        # gah
         timeout = self.timeout()
         if timeout is None:
             timeout = 1.0
         timeout = min(timeout, 0.1) * 1010
         
-        #log.msg('scheduling: ' + str(timeout))
-
-        if self._timer is None:
-            self._timer = QTimer()
-            QObject.connect(self._timer, SIGNAL("timeout()"), self.simulate)
-        self._timer.start(timeout)
+        QTimer.singleShot(timeout,self.simulate)
 
     def cleanup(self):
-        if self._timer is not None:
-            self._timer.stop()
-            self._timer = None
+        pass
 
     """ need this to update when simulate is called back in
     case its immediate or sooner """         
     def callLater(self,howlong, *args, **kargs):
         rval = super(QTReactor,self).callLater(howlong, *args, **kargs)
-        if self._timer is not None:
-            self._timer.stop()
-            self._timer=None
-        self._timer=QTimer()
-        timeout = self.timeout()
-        QObject.connect(self._timer, SIGNAL("timeout()"), self.simulate)
-        self._timer.start(timeout)
+        timeout = self.timeout() * 1010
+        if self.running:
+            QTimer.singleShot(timeout,self.simulate)
         return rval
 
     def iterate(self, delay=0.0):
+        #assert self.running, " call reactor run first"
         #log.msg(channel='system', event='iteration', reactor=self)
         #self._crashCall = self.callLater(delay, self.crash)
+        endtime = time.time() + delay
+        self.runUntilCurrent()
+        self.processQtEvents()
+        while time.time() < endtime:
+            self.runUntilCurrent()
+            self.processQtEvents()
+        
+    def initialize(self):
+        log.msg('************** qt4.initialize() ******************')        
+        self.qAppRunning=True
         self.simulate()
         
     def run(self,installSignalHandlers=1):
-        self.installSignalHandlers=installSignalHandlers
-        log.msg('calling qApp.exec_()')
-        self.qApp.exec_()
-        
-    def runFirst(self):
-        log.msg('runFirst...')
-        self.running = 1
-        self.startRunning(installSignalHandlers=self.installSignalHandlers)
-        self.iterate()
-        log.msg('runFirst returns...')
-
+        log.msg('************** qt4.run() ******************')
+        self.startRunning(installSignalHandlers=installSignalHandlers)
+        if not self.qAppRunning:
+            self.qApp.exec_()
+            
+    def stop(self):
+        self.qApp.quit()
+        self.removeAll()        
+        super(QTReactor,self).stop()
+        self.qAppRunning=False
+            
     def crash(self):
         if self._crashCall is not None:
             if self._crashCall.active():
                 self._crashCall.cancel()
             self._crashCall = None
-        self.running = 0
+        self.running = False
 
 
 def install(app=None):
@@ -226,11 +226,12 @@ def install(app=None):
             def run(self):
                 reactor = QTReactor(app=self.app)
                 main.installReactor(reactor)
-                QTimer.singleShot(0,reactor.runFirst)
+                QTimer.singleShot(0,reactor.initialize)
+                
 
     t=runThread(app)
     t.run()
     t.wait()
-    print 'install complete'
+    print '************* qt4 install complete *******************'
     
 __all__ = ['install']

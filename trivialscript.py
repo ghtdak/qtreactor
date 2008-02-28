@@ -38,9 +38,13 @@ def buildGui():
     engine.evaluate("button.text = 'Hello World!'")
     engine.evaluate("button.styleSheet = 'font-style: italic'")
     engine.evaluate("button.show()")
-
-task.LoopingCall(testReactor).start(1.0)
-#reactor.callWhenRunning(buildGui)
+def doit():
+    task.LoopingCall(testReactor).start(1.0)
+    reactor.callLater(5.0,reactor.stop)
+reactor.callWhenRunning(doit)
+reactor.run()
+log.msg('after first run...')
+reactor.callWhenRunning(reactor.callLater,5.0,reactor.stop)
 reactor.run()
 log.msg('fell off the bottom?...')
 
