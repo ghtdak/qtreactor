@@ -3,12 +3,13 @@ import sys
 import sys
 from PyQt4 import QtGui, QtScript
 from PyQt4.QtCore import QTimer, SIGNAL
-import qt4reactor
+
 
 def testReactor():
     print 'tick...'
 
 #===============================================================================
+# import qt4reactor
 # app = QtGui.QApplication(sys.argv)
 # print "installing reactor"
 # qt4reactor.install(app)
