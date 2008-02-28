@@ -21,7 +21,7 @@ Port to QT4: U{Gabe Rudy<mailto:rudy@goldenhelix.com>}
 
 
 # System Imports
-from PyQt4.QtCore import QSocketNotifier, QObject, SIGNAL, QTimer
+from PyQt4.QtCore import QSocketNotifier, QObject, SIGNAL, QTimer,QThread
 from PyQt4.QtGui import QApplication
 import sys
 
@@ -193,12 +193,18 @@ class QTReactor(posixbase.PosixReactorBase):
         #log.msg(channel='system', event='iteration', reactor=self)
         #self._crashCall = self.callLater(delay, self.crash)
         self.simulate()
-
-    def returnRun(self, installSignalHandlers=1):
+        
+    def run(self,installSignalHandlers=1):
+        self.installSignalHandlers=installSignalHandlers
+        log.msg('calling qApp.exec_()')
+        self.qApp.exec_()
+        
+    def runFirst(self):
+        log.msg('runFirst...')
         self.running = 1
-        self.startRunning(installSignalHandlers=installSignalHandlers)
+        self.startRunning(installSignalHandlers=self.installSignalHandlers)
         self.iterate()
-        #self.qApp.exec_()
+        log.msg('runFirst returns...')
 
     def crash(self):
         if self._crashCall is not None:
@@ -212,8 +218,19 @@ def install(app=None):
     """Configure the twisted mainloop to be run inside the qt mainloop.
     """
     from twisted.internet import main
+    class runThread(QThread):
+            def __init__(self,app):
+                QThread.__init__(self)
+                self.app=app
+                
+            def run(self):
+                reactor = QTReactor(app=self.app)
+                main.installReactor(reactor)
+                QTimer.singleShot(0,reactor.runFirst)
 
-    reactor = QTReactor(app=app)
-    main.installReactor(reactor)
-
+    t=runThread(app)
+    t.run()
+    t.wait()
+    print 'install complete'
+    
 __all__ = ['install']
