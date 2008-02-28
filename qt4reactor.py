@@ -207,7 +207,10 @@ class QTReactor(posixbase.PosixReactorBase):
         self.qAppRunning=False
             
     def crash(self):
-        self.stop()
+        self.qApp.quit()
+        self.removeAll()        
+        super(QTReactor,self).crash()
+        self.qAppRunning=False
 #===============================================================================
 #        if self._crashCall is not None:
 #            if self._crashCall.active():
