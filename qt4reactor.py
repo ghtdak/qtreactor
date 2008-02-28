@@ -207,11 +207,14 @@ class QTReactor(posixbase.PosixReactorBase):
         self.qAppRunning=False
             
     def crash(self):
-        if self._crashCall is not None:
-            if self._crashCall.active():
-                self._crashCall.cancel()
-            self._crashCall = None
-        self.running = False
+        self.stop()
+#===============================================================================
+#        if self._crashCall is not None:
+#            if self._crashCall.active():
+#                self._crashCall.cancel()
+#            self._crashCall = None
+#        self.running = False
+#===============================================================================
 
 
 def install(app=None):
