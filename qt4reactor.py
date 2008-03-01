@@ -186,6 +186,7 @@ class QTReactor(posixbase.PosixReactorBase):
         self.runUntilCurrent()
         self.processQtEvents()
         while time.time() < endtime:
+            time.sleep(0.01) # gotta hate this...
             self.runUntilCurrent()
             self.processQtEvents()
         
