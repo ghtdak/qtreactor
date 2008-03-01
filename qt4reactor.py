@@ -21,7 +21,7 @@ Port to QT4: U{Gabe Rudy<mailto:rudy@goldenhelix.com>}
 
 
 # System Imports
-from PyQt4.QtCore import QSocketNotifier, QObject, SIGNAL, QTimer,QThread
+from PyQt4.QtCore import QSocketNotifier, QObject, SIGNAL, QTimer,QThread, QEventLoop
 from PyQt4.QtGui import QApplication
 import sys, time
 
@@ -182,13 +182,8 @@ class QTReactor(posixbase.PosixReactorBase):
         #assert self.running, " call reactor run first"
         #log.msg(channel='system', event='iteration', reactor=self)
         #self._crashCall = self.callLater(delay, self.crash)
-        endtime = time.time() + delay
-        self.runUntilCurrent()
-        self.processQtEvents()
-        while time.time() < endtime:
-            time.sleep(0.01) # gotta hate this...
-            self.runUntilCurrent()
-            self.processQtEvents()
+        endtime = int(delay * 1010) # FIX: not sure if we need the extra 10ms
+        self.processQtEvents(QEventLoop.WaitForMoreEvents & QEventLoop.AllEvents,endtime)
         
     def initialize(self):
         log.msg('************** qt4.initialize() ******************')        
