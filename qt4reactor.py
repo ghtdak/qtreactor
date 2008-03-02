@@ -163,16 +163,20 @@ class QTReactor(posixbase.PosixReactorBase):
             QTimer.singleShot(timeout,self.simulate)
         return rval
 
-    def iterate(self, delay=0.0, qtflags = QEventLoop.WaitForMoreEvents | QEventLoop.AllEvents):
+    def iterate(self, delay=0.0):
         """ this iterate is completely re-entrant 
         Of course, that means you'll need to deal with the
         inherent blocking of a previous iterate... there's
         only one stack!!!"""
         class localDelay(QtCore.QEventLoop):
-            def __init__(self,parent,delay):
-                QtCore.QEventLoop.__init__(self,parent)
-                QtCore.QTimer.singleShot(delay * 1010, self.exit)
-        localDelay(self.qApp, delay).exec_()
+            def __init__(self,reactor,delay):
+                QtCore.QEventLoop.__init__(self,reactor.qApp)
+                reactor.callLater(delay,self.myExit)
+            def myExit(self):
+                #log.msg('localDelay exiting')
+                self.exit()
+        localDelay(self,delay).exec_()
+        #log.msg('leaving iterate...')
         
     def initialize(self):
         #log.msg('************** qt4.initialize() ******************')        
@@ -183,7 +187,9 @@ class QTReactor(posixbase.PosixReactorBase):
         #log.msg('************** qt4.run() ******************')
         self.startRunning(installSignalHandlers=installSignalHandlers)
         if not self.qAppRunning:
+            log.msg('calling qApp_exec_()')
             self.qApp.exec_()
+        log.msg('fell off run....')
             
     def stop(self):
         self.qApp.quit()
