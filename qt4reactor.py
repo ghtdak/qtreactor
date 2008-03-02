@@ -22,7 +22,8 @@ Port to QT4: U{Gabe Rudy<mailto:rudy@goldenhelix.com>}
 
 # System Imports
 from PyQt4.QtCore import QSocketNotifier, QObject, SIGNAL, QTimer,QThread, QEventLoop
-from PyQt4.QtGui import QApplication
+from PyQt4 import QtCore
+from PyQt4.QtCore import QCoreApplication
 import sys, time
 
 # Twisted Imports
@@ -98,7 +99,7 @@ class TwistedSocketNotifier(object):
         self.reactor.simulate()
 
 
-class QTReactor(posixbase.PosixReactorBase, QEventLoop):
+class QTReactor(posixbase.PosixReactorBase):
     """Qt based reactor."""
 
     # Reference to a DelayedCall for self.crash() when the reactor is
@@ -111,7 +112,7 @@ class QTReactor(posixbase.PosixReactorBase, QEventLoop):
 #===============================================================================
         posixbase.PosixReactorBase.__init__(self)
         if app is None:
-            app = QApplication([])
+            app = QCoreApplication([])
         self.qApp = app
         self.qAppRunning=False
 
@@ -193,6 +194,7 @@ class QTReactor(posixbase.PosixReactorBase, QEventLoop):
         self.startRunning(installSignalHandlers=installSignalHandlers)
         if not self.qAppRunning:
             self.qApp.exec_()
+        log.msg('fell off qApp.exec_....')
             
     def stop(self):
         self.qApp.quit()
@@ -218,20 +220,14 @@ def install(app=None):
     """Configure the twisted mainloop to be run inside the qt mainloop.
     """
     from twisted.internet import main
-    class runThread(QThread):
-            def __init__(self,app):
-                QThread.__init__(self)
-                self.app=app
-                
-            def run(self):
-                reactor = QTReactor(app=self.app)
-                main.installReactor(reactor)
-                QTimer.singleShot(0,reactor.initialize)
-                
+    class twistedInit(QtCore.QEventLoop):
+        def __init__(self,parent,reactor):
+            QtCore.QEventLoop.__init__(self,parent)
+            QtCore.QTimer.singleShot(0,reactor.initialize)
 
-    t=runThread(app)
-    t.start()
-    t.wait()
+    reactor = QTReactor(app)
+    main.installReactor(reactor)
+    t=twistedInit(app,reactor)
     print '************* qt4 install complete *******************'
     
 __all__ = ['install']
