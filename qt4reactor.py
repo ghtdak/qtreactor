@@ -117,22 +117,22 @@ class QTReactor(posixbase.PosixReactorBase):
 
     def addReader(self, reader):
         if not hasReader(reader):
-            log.msg("addReader...")
+            #log.msg("addReader...")
             reads[reader] = TwistedSocketNotifier(self, reader, QSocketNotifier.Read)
 
     def addWriter(self, writer):
         if not hasWriter(writer):
-            log.msg("addWriter...")            
+            #log.msg("addWriter...")            
             writes[writer] = TwistedSocketNotifier(self, writer, QSocketNotifier.Write)
 
     def removeReader(self, reader):
-        log.msg("removeReader...")
+        #log.msg("removeReader...")
         if hasReader(reader):
             reads[reader].shutdown()
             del reads[reader]
 
     def removeWriter(self, writer):
-        log.msg("removeWriter...")        
+        #log.msg("removeWriter...")        
         if hasWriter(writer):
             writes[writer].shutdown()
             del writes[writer]
@@ -187,8 +187,9 @@ class QTReactor(posixbase.PosixReactorBase):
             
     def stop(self):
         self.qApp.quit()
-        self.removeAll()        
-        super(QTReactor,self).stop()
+        self.removeAll()
+        if self.running:        
+            super(QTReactor,self).stop()
         self.qAppRunning=False
             
     def crash(self):
