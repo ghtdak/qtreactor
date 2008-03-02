@@ -60,7 +60,7 @@ class TwistedSocketNotifier(object):
     def shutdown(self):
         if self.qNotifier != None:
             QObject.disconnect(self.qNotifier, SIGNAL("activated(int)"), self.fn)
-            self.qNotifier.setEnabled(0)
+            self.qNotifier.setEnabled(False)
         self.fn = self.watcher = None
 
     def read(self, sock):
@@ -80,7 +80,7 @@ class TwistedSocketNotifier(object):
     def write(self, sock):
         why = None
         w = self.watcher
-        self.qNotifier.setEnabled(0)
+        self.qNotifier.setEnabled(False)
         try:
             #log.msg('writing...')
             why = w.doWrite()
@@ -96,7 +96,7 @@ class TwistedSocketNotifier(object):
             except:
                 log.deferr()
         elif self.watcher:
-            self.setEnabled(1)
+            self.qNotifier.setEnabled(True)
         self.reactor.simulate()
 
 
