@@ -67,7 +67,7 @@ class TwistedSocketNotifier(object):
         why = None
         w = self.watcher
         try:
-            log.msg('reading...')
+            #log.msg('reading...')
             why = w.doRead()
         except:
             why = sys.exc_info()[1]
@@ -82,7 +82,7 @@ class TwistedSocketNotifier(object):
         w = self.watcher
         self.qNotifier.setEnabled(0)
         try:
-            log.msg('writing...')
+            #log.msg('writing...')
             why = w.doWrite()
         except:
             why = sys.exc_value
@@ -172,7 +172,7 @@ class QTReactor(posixbase.PosixReactorBase):
             def __init__(self,parent,delay):
                 QtCore.QEventLoop.__init__(self,parent)
                 QtCore.QTimer.singleShot(delay * 1010, self.exit)
-        localDelay(None, delay).exec_()
+        localDelay(self.qApp, delay).exec_()
         
     def initialize(self):
         #log.msg('************** qt4.initialize() ******************')        
@@ -194,8 +194,9 @@ class QTReactor(posixbase.PosixReactorBase):
             
     def crash(self):
         self.qApp.quit()
-        self.removeAll()        
-        super(QTReactor,self).crash()
+        self.removeAll()
+        if self.running: # ???        
+            super(QTReactor,self).crash()
         self.qAppRunning=False
 
 def install(app=None):
