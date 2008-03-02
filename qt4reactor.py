@@ -17,6 +17,7 @@ API Stability: stable
 
 Maintainer: U{Itamar Shtull-Trauring<mailto:twisted@itamarst.org>}
 Port to QT4: U{Gabe Rudy<mailto:rudy@goldenhelix.com>}
+Another port to Qt4: U{Glenn H. Tarbox, PhD<mailto:glenn@tarbox.org>}
 """
 
 
@@ -107,9 +108,7 @@ class QTReactor(posixbase.PosixReactorBase):
     _crashCall = None
 
     def __init__(self, app=None):
-#===============================================================================
-#        self.running = 0
-#===============================================================================
+
         posixbase.PosixReactorBase.__init__(self)
         if app is None:
             app = QCoreApplication([])
@@ -145,18 +144,6 @@ class QTReactor(posixbase.PosixReactorBase):
         self.qApp.processEvents()
 
     def simulate(self):
-#===============================================================================
-#        if self.running == False:
-#            return
-#===============================================================================
-
-#===============================================================================
-#        if not self.running:
-#            self.running = 1
-#            self.qApp.exit_loop()
-#            return
-#        self.runUntilCurrent()
-#===============================================================================
 
         self.runUntilCurrent()
 
@@ -185,16 +172,15 @@ class QTReactor(posixbase.PosixReactorBase):
         self.processQtEvents(qtflags,endtime)
         
     def initialize(self):
-        log.msg('************** qt4.initialize() ******************')        
+        #log.msg('************** qt4.initialize() ******************')        
         self.qAppRunning=True
         self.simulate()
         
     def run(self,installSignalHandlers=1):
-        log.msg('************** qt4.run() ******************')
+        #log.msg('************** qt4.run() ******************')
         self.startRunning(installSignalHandlers=installSignalHandlers)
         if not self.qAppRunning:
             self.qApp.exec_()
-        log.msg('fell off qApp.exec_....')
             
     def stop(self):
         self.qApp.quit()
@@ -207,14 +193,6 @@ class QTReactor(posixbase.PosixReactorBase):
         self.removeAll()        
         super(QTReactor,self).crash()
         self.qAppRunning=False
-#===============================================================================
-#        if self._crashCall is not None:
-#            if self._crashCall.active():
-#                self._crashCall.cancel()
-#            self._crashCall = None
-#        self.running = False
-#===============================================================================
-
 
 def install(app=None):
     """Configure the twisted mainloop to be run inside the qt mainloop.
@@ -228,6 +206,6 @@ def install(app=None):
     reactor = QTReactor(app)
     main.installReactor(reactor)
     t=twistedInit(app,reactor)
-    print '************* qt4 install complete *******************'
+    #print '************* qt4 install complete *******************'
     
 __all__ = ['install']
