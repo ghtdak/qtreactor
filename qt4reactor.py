@@ -140,9 +140,6 @@ class QTReactor(posixbase.PosixReactorBase):
     def removeAll(self):
         return self._removeAll(reads, writes)
     
-    def processQtEvents(self):
-        self.qApp.processEvents()
-
     def simulate(self):
 
         self.runUntilCurrent()
@@ -166,10 +163,13 @@ class QTReactor(posixbase.PosixReactorBase):
             QTimer.singleShot(timeout,self.simulate)
         return rval
 
-    def iterate(self, delay=0.0, qtflags = QEventLoop.WaitForMoreEvents & QEventLoop.AllEvents):
+    def iterate(self, delay=0.0, qtflags = QEventLoop.WaitForMoreEvents | QEventLoop.AllEvents):
         """ this iterate is completely re-entrant """
-        endtime = int(delay * 1010) # FIX: not sure if we need the extra 10ms
-        self.processQtEvents(qtflags,endtime)
+        endtime = time.time() + delay
+        self.qApp.processEvents(qtflags,int(delay * 1010)) # not sure if we need the extra 10
+        while time.time() < endtime:
+            self.qApp.processEvents(qtflags,int((endtime - time.time())*1010))
+
         
     def initialize(self):
         #log.msg('************** qt4.initialize() ******************')        
