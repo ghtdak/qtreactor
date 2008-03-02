@@ -1,0 +1,26 @@
+
+Lots of changes from the original code base and a bunch of things I
+haven't figured out yet.
+
+Crash probably doesn't work properly.  Need to look into what was
+intended here previously and what really should happen.
+
+Interestingly, the design of Qt allows reactor.iterate() to be
+re-entrant.  QEventLoops, in general, allow the creation of "local"
+event loops which, effectively, hang onto the stack yet re-enter the
+event handling mechanism until its time to come back.  Need to loook
+at the implementation to see whether this couldn't be more generally
+applied to Twisted.
+
+Of course, this might be a very bad idea... Using iterate recursively
+is a sure fire way to hang yourself as you block the return of any previous
+iterate(). there's only one stack kids...
+
+That being said, there may be times that this is goodness... and, it
+would be relatively straightforward to put in a default "no-recursive
+iterate" which could be adjusted by the clueful for those cases when
+the stack frame is critical....
+
+Finally, if QApplication is not provided, a QCoreApplication is
+constructed instead of QApplication (used previously) so its no longer
+a GUI...  no X required for buildbot testing etc.
