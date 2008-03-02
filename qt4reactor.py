@@ -187,9 +187,9 @@ class QTReactor(posixbase.PosixReactorBase):
         #log.msg('************** qt4.run() ******************')
         self.startRunning(installSignalHandlers=installSignalHandlers)
         if not self.qAppRunning:
-            log.msg('calling qApp_exec_()')
+            #log.msg('calling qApp_exec_()')
             self.qApp.exec_()
-        log.msg('fell off run....')
+        #log.msg('fell off run....')
             
     def stop(self):
         self.qApp.quit()
