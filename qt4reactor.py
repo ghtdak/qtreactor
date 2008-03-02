@@ -98,7 +98,7 @@ class TwistedSocketNotifier(object):
         self.reactor.simulate()
 
 
-class QTReactor(posixbase.PosixReactorBase):
+class QTReactor(posixbase.PosixReactorBase, QEventLoop):
     """Qt based reactor."""
 
     # Reference to a DelayedCall for self.crash() when the reactor is
@@ -178,12 +178,10 @@ class QTReactor(posixbase.PosixReactorBase):
             QTimer.singleShot(timeout,self.simulate)
         return rval
 
-    def iterate(self, delay=0.0):
-        #assert self.running, " call reactor run first"
-        #log.msg(channel='system', event='iteration', reactor=self)
-        #self._crashCall = self.callLater(delay, self.crash)
+    def iterate(self, delay=0.0, qtflags = QEventLoop.WaitForMoreEvents & QEventLoop.AllEvents):
+        """ this iterate is completely re-entrant """
         endtime = int(delay * 1010) # FIX: not sure if we need the extra 10ms
-        self.processQtEvents(QEventLoop.WaitForMoreEvents & QEventLoop.AllEvents,endtime)
+        self.processQtEvents(qtflags,endtime)
         
     def initialize(self):
         log.msg('************** qt4.initialize() ******************')        
@@ -232,7 +230,7 @@ def install(app=None):
                 
 
     t=runThread(app)
-    t.run()
+    t.start()
     t.wait()
     print '************* qt4 install complete *******************'
     
