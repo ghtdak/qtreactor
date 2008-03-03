@@ -14,13 +14,10 @@ def testReactor():
 
 def doit():
     task.LoopingCall(testReactor).start(1.0)
-    reactor.callLater(5.0,reactor.stop)
+    reactor.callLater(15.0,reactor.stop)
     
 reactor.callWhenRunning(doit)
 log.msg('calling reactor.run()')
-reactor.run()
-log.msg('after first run...')
-reactor.callWhenRunning(reactor.callLater,5.0,reactor.stop)
 reactor.run()
 log.msg('fell off the bottom?...')
 
