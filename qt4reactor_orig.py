@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2008 Twisted Matrix Laboratories.
+# Copyright (c) 2001-2004 Twisted Matrix Laboratories.
 # See LICENSE for details.
 
 
@@ -7,8 +7,8 @@ This module provides support for Twisted to interact with the PyQt mainloop.
 
 In order to use this support, simply do the following::
 
-    |  import qt4reactor
-    |  qt4reactor.install()
+    |  from twisted.internet import qtreactor
+    |  qtreactor.install()
 
 Then use twisted.internet APIs as usual.  The other methods here are not
 intended to be called directly.
@@ -21,17 +21,14 @@ Port to QT4: U{Gabe Rudy<mailto:rudy@goldenhelix.com>}
 
 __all__ = ['install']
 
-
-import sys
-
-from zope.interface import implements
-
+# System Imports
 from PyQt4.QtCore import QSocketNotifier, QObject, SIGNAL, QTimer
 from PyQt4.QtGui import QApplication
+import sys
 
-from twisted.internet.interfaces import IReactorFDSet
-from twisted.python import log
-from twisted.internet.posixbase import PosixReactorBase
+# Twisted Imports
+from twisted.python import log, failure
+from twisted.internet import posixbase
 
 
 
@@ -59,44 +56,46 @@ class TwistedSocketNotifier(QSocketNotifier):
 
 
     def read(self, sock):
+        why = None
         w = self.watcher
-        def _read():
-            why = None
-            try:
-                why = w.doRead()
-            except:
-                log.err()
-                why = sys.exc_info()[1]
-            if why:
-                self.reactor._disconnectSelectable(w, why, True)
-        log.callWithLogger(w, _read)
+        try:
+            why = w.doRead()
+        except:
+            why = sys.exc_info()[1]
+            log.msg('Error in %s.doRead()' % w)
+            log.deferr()
+        if why:
+            self.reactor._disconnectSelectable(w, why, True)
         self.reactor.simulate()
 
 
     def write(self, sock):
+        why = None
         w = self.watcher
-        def _write():
-            why = None
-            self.setEnabled(0)
+        self.setEnabled(0)
+        try:
+            why = w.doWrite()
+        except:
+            why = sys.exc_value
+            log.msg('Error in %s.doWrite()' % w)
+            log.deferr()
+        if why:
+            self.reactor.removeReader(w)
+            self.reactor.removeWriter(w)
             try:
-                why = w.doWrite()
+                w.connectionLost(failure.Failure(why))
             except:
-                log.err()
-                why = sys.exc_value
-            if why:
-                self.reactor._disconnectSelectable(w, why, False)
-            elif self.watcher:
-                self.setEnabled(1)
-        log.callWithLogger(w, _write)
+                log.deferr()
+        elif self.watcher:
+            self.setEnabled(1)
         self.reactor.simulate()
 
 
 
-class QTReactor(PosixReactorBase):
+class QTReactor(posixbase.PosixReactorBase):
     """
     Qt based reactor.
     """
-    implements(IReactorFDSet)
 
     # Reference to a DelayedCall for self.crash() when the reactor is
     # entered through .iterate()
@@ -107,10 +106,11 @@ class QTReactor(PosixReactorBase):
     def __init__(self, app=None):
         self._reads = {}
         self._writes = {}
+        self.running = 0
+        posixbase.PosixReactorBase.__init__(self)
         if app is None:
             app = QApplication([])
         self.qApp = app
-        PosixReactorBase.__init__(self)
         self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
 
 
@@ -156,6 +156,7 @@ class QTReactor(PosixReactorBase):
             self._timer = None
 
         if not self.running:
+            self.running = 1
             self.qApp.exit()
             return
         self.runUntilCurrent()
@@ -166,7 +167,7 @@ class QTReactor(PosixReactorBase):
         timeout = self.timeout()
         if timeout is None:
             timeout = 1.0
-        timeout = min(timeout, 0.001) * 1010
+        timeout = min(timeout, 0.01) * 1010
 
         if self._timer is None:
             self._timer = QTimer()
@@ -181,21 +182,24 @@ class QTReactor(PosixReactorBase):
 
 
     def iterate(self, delay=0.0):
-        self._crashCall = self.callLater(delay, self._crash)
+        log.msg(channel='system', event='iteration', reactor=self)
+        self._crashCall = self.callLater(delay, self.crash)
         self.run()
 
 
-    def mainLoop(self):
+    def run(self, installSignalHandlers=1):
+        self.running = 1
+        self.startRunning(installSignalHandlers=installSignalHandlers)
         self.simulate()
         self.qApp.exec_()
 
 
-    def _crash(self):
+    def crash(self):
         if self._crashCall is not None:
             if self._crashCall.active():
                 self._crashCall.cancel()
             self._crashCall = None
-        self.running = False
+        self.running = 0
 
 
 
