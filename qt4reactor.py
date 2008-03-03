@@ -146,8 +146,8 @@ class QTReactor(posixbase.PosixReactorBase):
     
     def readerWriterSimulate(self):
         self.rwsimCount += 1
-        simulate()
-    
+        self.simulate()
+        
     def simulate(self):
         self.simCount += 1
 
@@ -156,7 +156,7 @@ class QTReactor(posixbase.PosixReactorBase):
         timeout = self.timeout()
         if timeout is None:
             timeout = 1.0
-        self.tm = timeout = int(min(timeout, 0.1) * 1010)
+        self.tm = timeout = min(timeout, 0.1) * 1010
         
         QTimer.singleShot(timeout,self.simulate)
 
