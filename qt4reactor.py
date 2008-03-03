@@ -114,6 +114,7 @@ class QTReactor(posixbase.PosixReactorBase):
             app = QCoreApplication([])
         self.qApp = app
         self.qAppRunning=False
+        self.simCount=0
 
     def addReader(self, reader):
         if not hasReader(reader):
@@ -141,6 +142,7 @@ class QTReactor(posixbase.PosixReactorBase):
         return self._removeAll(reads, writes)
     
     def simulate(self):
+        self.simCount += 1
 
         self.runUntilCurrent()
 
