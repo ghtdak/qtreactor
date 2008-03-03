@@ -75,7 +75,7 @@ class TwistedSocketNotifier(object):
             log.deferr()
         if why:
             self.reactor._disconnectSelectable(w, why, True)
-        self.reactor.simulate()
+        self.reactor.readerWriterSimulate()
 
     def write(self, sock):
         why = None
@@ -97,7 +97,7 @@ class TwistedSocketNotifier(object):
                 log.deferr()
         elif self.watcher:
             self.qNotifier.setEnabled(True)
-        self.reactor.simulate()
+        self.reactor.readerWriterSimulate()
 
 
 class QTReactor(posixbase.PosixReactorBase):
@@ -109,12 +109,15 @@ class QTReactor(posixbase.PosixReactorBase):
 
     def __init__(self, app=None):
 
+        self.simCount=0
+        self.rwsimCount=0 # instrumentation variables for debugging
+        self.tm=0
+        
         posixbase.PosixReactorBase.__init__(self)
         if app is None:
             app = QCoreApplication([])
         self.qApp = app
         self.qAppRunning=False
-        self.simCount=0
 
     def addReader(self, reader):
         if not hasReader(reader):
@@ -141,6 +144,10 @@ class QTReactor(posixbase.PosixReactorBase):
     def removeAll(self):
         return self._removeAll(reads, writes)
     
+    def readerWriterSimulate(self):
+        self.rwsimCount += 1
+        simulate()
+    
     def simulate(self):
         self.simCount += 1
 
@@ -149,7 +156,7 @@ class QTReactor(posixbase.PosixReactorBase):
         timeout = self.timeout()
         if timeout is None:
             timeout = 1.0
-        timeout = min(timeout, 0.1) * 1010
+        self.tm = timeout = int(min(timeout, 0.1) * 1010)
         
         QTimer.singleShot(timeout,self.simulate)
 
@@ -160,9 +167,7 @@ class QTReactor(posixbase.PosixReactorBase):
     case its immediate or sooner """         
     def callLater(self,howlong, *args, **kargs):
         rval = super(QTReactor,self).callLater(howlong, *args, **kargs)
-        timeout = self.timeout() * 1010
-        if self.running:
-            QTimer.singleShot(timeout,self.simulate)
+        self.simulate()
         return rval
 
     def iterate(self, delay=0.0):
