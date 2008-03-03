@@ -31,10 +31,14 @@ class doNothing(object):
             log.msg('looping started....')
         
     def printStat(self):
-        log.msg(' c: ' + str(self.count) + 
-                ' st: ' + str(reactor.simCount) +
-                ' rw: ' + str(reactor.rwsimCount) +
-                ' to: ' + str(reactor.tm))
+#===============================================================================
+#        log.msg(' c: ' + str(self.count) + 
+#                ' st: ' + str(reactor.simCount) +
+#                ' rw: ' + str(reactor.rwsimCount) +
+#                ' to: ' + str(reactor.tm))
+#===============================================================================
+
+        log.msg('c:' + str(self.count))
 
 t=doNothing()
 

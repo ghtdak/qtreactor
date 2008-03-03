@@ -1,4 +1,11 @@
 
+OK, so there's something really strange here... I started this
+activity because of problems I had with the available Qt4
+reactor... then created a whole bunch of new problems... but now the
+old reactor outta the box basically works.  so, here's the
+code but I think the bottom line is disregard anything I might have
+touched and use the code from the twisted folks.  both here...
+
 Lots of changes from the original code base and a bunch of things I
 haven't figured out yet.
 
