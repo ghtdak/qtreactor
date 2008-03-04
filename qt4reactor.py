@@ -25,11 +25,12 @@ Subsequent port by therve
 __all__ = ['install']
 
 
-import sys
+import sys, time
 
 from zope.interface import implements
 
 from PyQt4.QtCore import QSocketNotifier, QObject, SIGNAL, QTimer, QCoreApplication
+from PyQt4.QtCore import QEventLoop
 
 from twisted.internet.interfaces import IReactorFDSet
 from twisted.python import log
@@ -189,6 +190,16 @@ class QTReactor(PosixReactorBase):
             self._timer.stop()
             self._timer = None
 
+    def toxic_Reiterate(self,delay=0.0):
+        """ may the wrath of exarkun be upon all ye who enter here"""
+        if not self._timer.isActive():
+            self._timer.start(0)
+        endTime = time.time() + delay
+        while True:
+            t = endTime - time.time()
+            if t <= 0.0: return
+            self.qApp.processEvents(QEventLoop.AllEvents | 
+                                    QEventLoop.WaitForMoreEvents,t*1000)
 
     def iterate(self, delay=0.0):
         self._crashCall = self.callLater(delay, self._crash)
