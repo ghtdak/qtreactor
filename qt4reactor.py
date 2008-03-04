@@ -154,7 +154,8 @@ class QTReactor(PosixReactorBase):
     def simulate(self):
         if self._timer is not None:
             self._timer.stop()
-            self._timer = None
+            #del self._timer
+            #self._timer = None
 
         if not self.running:
             self.qApp.exit()
