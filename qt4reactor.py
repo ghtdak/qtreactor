@@ -3,7 +3,7 @@
 
 
 """
-This module provides support for Twisted to interact with the PyQt mainloop.
+This module provides support for Twisted to be driven by the Qt mainloop.
 
 In order to use this support, simply do the following::
 
@@ -15,8 +15,11 @@ intended to be called directly.
 
 API Stability: stable
 
-Maintainer: U{Itamar Shtull-Trauring<mailto:twisted@itamarst.org>}
-Port to QT4: U{Gabe Rudy<mailto:rudy@goldenhelix.com>}
+Maintainer: U{Glenn H Tarbox, PhD<mailto:glenn@tarbox.org>}
+
+Previous maintainer: U{Itamar Shtull-Trauring<mailto:twisted@itamarst.org>}
+Original port to QT4: U{Gabe Rudy<mailto:rudy@goldenhelix.com>}
+Subsequent port by therve
 """
 
 __all__ = ['install']
@@ -69,7 +72,7 @@ class TwistedSocketNotifier(QSocketNotifier):
             if why:
                 self.reactor._disconnectSelectable(w, why, True)
         log.callWithLogger(w, _read)
-        QTimer.singleShot(0,self.reactor.simulate)
+        self.reactor.pingSimulate()
 
 
     def write(self, sock):
@@ -87,7 +90,7 @@ class TwistedSocketNotifier(QSocketNotifier):
             elif self.watcher:
                 self.setEnabled(1)
         log.callWithLogger(w, _write)
-        QTimer.singleShot(0,self.reactor.simulate)
+        self.reactor.pingSimulate()
 
 class QTReactor(PosixReactorBase):
     """
@@ -104,6 +107,10 @@ class QTReactor(PosixReactorBase):
     def __init__(self, app=None):
         self._reads = {}
         self._writes = {}
+        self._timer=QTimer()
+        self._timer.setSingleShot(True)
+        QObject.connect(self._timer, SIGNAL("timeout()"), self.simulate)
+        
         if app is None:
             """ QCoreApplication doesn't require X or other GUI
             environment """
@@ -149,11 +156,11 @@ class QTReactor(PosixReactorBase):
         return self._writes.keys()
 
 
+    def pingSimulate(self):
+        self._timer.setInterval(0)
+
     def simulate(self):
-        if self._timer is not None:
-            self._timer.stop()
-            #del self._timer
-            #self._timer = None
+        self._timer.stop()
 
         if not self.running:
             self.qApp.exit()
@@ -168,16 +175,13 @@ class QTReactor(PosixReactorBase):
             timeout = 1.0
         timeout = min(timeout, 0.1) * 1010
 
-        if self._timer is None:
-            self._timer = QTimer()
-            QObject.connect(self._timer, SIGNAL("timeout()"), self.simulate)
         self._timer.start(timeout)
         
     """ need this to update when simulate is called back in
     case its immediate (or sooner) """         
     def callLater(self,howlong, *args, **kargs):
         rval = super(QTReactor,self).callLater(howlong, *args, **kargs)
-        QTimer.singleShot(0,self.simulate)
+        self.pingSimulate()
         return rval    
 
     def cleanup(self):
@@ -192,9 +196,9 @@ class QTReactor(PosixReactorBase):
 
 
     def mainLoop(self):
-        self.simulate()
+        self._timer.start(0) # effectively a call to simulate
+        #self.simulate()
         self.qApp.exec_()
-
 
     def _crash(self):
         if self._crashCall is not None:

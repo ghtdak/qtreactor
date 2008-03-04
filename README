@@ -1,7 +1,15 @@
-This seems to be working.  I suspect a memory leak and am
-investigating.  It passes trial tests with a few errors.
+This seems to be working.
+
+Some core design changes.  There was a bunch of destructing and
+constructing of the same timer object.  Now there is one timer
+responsible for simulate and everything invokes a call to simulate
+through that timer.  A convenience method, pingSimulate, is provided
+which sets the timer to timeout immediately.
+
+There appears to be a significant performance advantage which stands
+to reason.  Additionally, this method avoids any recursion through the
+various methods which require simulate to run immediately.
 
 Note that if a QApplication or QCoreApplication instance isn't
-provided at reactor install, a QCoreApplication is constructed instead
-of QApplication (used previously) so its no longer a GUI...  no X
-required for buildbot testing etc.
+provided at reactor installation, a default QCoreApplication is
+constructed.

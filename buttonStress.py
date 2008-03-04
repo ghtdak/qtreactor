@@ -14,12 +14,12 @@ class doNothing(object):
     def __init__(self):
         self.count = 0
         self.looping=False
-        task.LoopingCall(self.printStat).start(5.0)
+        task.LoopingCall(self.printStat).start(1.0)
         
     def doSomething(self):
         if not self.looping: return
         self.count += 1
-        reactor.callLater(0.01,self.doSomething)
+        reactor.callLater(0.003,self.doSomething)
         
     def buttonClick(self):
         if self.looping: 
