@@ -1,7 +1,5 @@
 import sys
 
-import sys
-
 from twisted.application import reactors
 reactors.installReactor('qt4')
 
