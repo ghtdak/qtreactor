@@ -69,7 +69,7 @@ class TwistedSocketNotifier(QSocketNotifier):
             if why:
                 self.reactor._disconnectSelectable(w, why, True)
         log.callWithLogger(w, _read)
-        self.reactor.simulate()
+        QTimer.singleShot(0,self.reactor.simulate)
 
 
     def write(self, sock):
@@ -87,9 +87,7 @@ class TwistedSocketNotifier(QSocketNotifier):
             elif self.watcher:
                 self.setEnabled(1)
         log.callWithLogger(w, _write)
-        self.reactor.simulate()
-
-
+        QTimer.singleShot(0,self.reactor.simulate)
 
 class QTReactor(PosixReactorBase):
     """
