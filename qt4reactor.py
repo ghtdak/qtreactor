@@ -84,7 +84,7 @@ class TwistedSocketNotifier(QSocketNotifier):
                 why = w.doWrite()
             except:
                 log.err()
-                why = sys.exc_value
+                why = sys.exc_info()[1]
             if why:
                 self.reactor._disconnectSelectable(w, why, False)
             elif self.watcher:
