@@ -26,8 +26,7 @@ import sys
 
 from zope.interface import implements
 
-from PyQt4.QtCore import QSocketNotifier, QObject, SIGNAL, QTimer
-from PyQt4.QtGui import QtCoreApplication
+from PyQt4.QtCore import QSocketNotifier, QObject, SIGNAL, QTimer, QCoreApplication
 
 from twisted.internet.interfaces import IReactorFDSet
 from twisted.python import log
@@ -108,9 +107,9 @@ class QTReactor(PosixReactorBase):
         self._reads = {}
         self._writes = {}
         if app is None:
-            """ QtCoreApplication doesn't require X or other GUI
+            """ QCoreApplication doesn't require X or other GUI
             environment """
-            app = QtCoreApplication([])
+            app = QCoreApplication([])
         self.qApp = app
         PosixReactorBase.__init__(self)
         self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
