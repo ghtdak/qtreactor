@@ -191,7 +191,12 @@ class QTReactor(PosixReactorBase):
             self._timer = None
 
     def toxic_Reiterate(self,delay=0.0):
-        """ may the wrath of exarkun be upon all ye who enter here"""
+        """WARNING: this re-entrant iterate CAN AND WILL
+        have dire and unintended consequences for all those
+        who attempt usage without the proper clearances.
+        
+        May the wrath of exarkun be upon the houses of 
+        all ye who enter here """
         if not self._timer.isActive():
             self._timer.start(0)
         endTime = time.time() + delay
