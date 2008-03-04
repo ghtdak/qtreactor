@@ -167,7 +167,7 @@ class QTReactor(PosixReactorBase):
         timeout = self.timeout()
         if timeout is None:
             timeout = 1.0
-        timeout = min(timeout, 0.001) * 1010
+        timeout = min(timeout, 0.1) * 1010
 
         if self._timer is None:
             self._timer = QTimer()
