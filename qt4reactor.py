@@ -173,7 +173,13 @@ class QTReactor(PosixReactorBase):
             self._timer = QTimer()
             QObject.connect(self._timer, SIGNAL("timeout()"), self.simulate)
         self._timer.start(timeout)
-
+        
+    """ need this to update when simulate is called back in
+    case its immediate (or sooner) """         
+    def callLater(self,howlong, *args, **kargs):
+        rval = super(QTReactor,self).callLater(howlong, *args, **kargs)
+        QTimer.singleShot(0,self.simulate)
+        return rval    
 
     def cleanup(self):
         if self._timer is not None:

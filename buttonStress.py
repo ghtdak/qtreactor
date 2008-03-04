@@ -19,7 +19,7 @@ class doNothing(object):
     def doSomething(self):
         if not self.looping: return
         self.count += 1
-        reactor.callLater(0.05,self.doSomething)
+        reactor.callLater(0.01,self.doSomething)
         
     def buttonClick(self):
         if self.looping: 
