@@ -176,6 +176,9 @@ class QTReactor(PosixReactorBase):
             timeout = 1.0
         timeout = min(timeout, 0.1) * 1010
 
+        if not self.running:
+            self.qApp.exit()
+            return
         self._timer.start(timeout)
         
     """ need this to update when simulate is called back in
