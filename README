@@ -13,3 +13,13 @@ various methods which require simulate to run immediately.
 Note that if a QApplication or QCoreApplication instance isn't
 provided at reactor installation, a default QCoreApplication is
 constructed.
+
+Included in this directory is a diff of trial's stdout between the
+default reactor and the Qt4 reactor.  The large time differences are
+due to hangage in some of the I/O tests unrelated to the performance
+of the reactor itself which is very good (to be quantified... I think
+its very good :-)
+
+# trial twisted $> /tmp/select.trial
+# trial --unclean-warnings --reactor=qt4 twisted &> /tmp/qt4.trial
+# diff /tmp/select.trial /tmp/qt4.trial > trial.diff
