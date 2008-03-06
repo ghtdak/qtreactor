@@ -192,7 +192,7 @@ class QTReactor(PosixReactorBase):
     def cleanup(self):
         if self._timer is not None:
             self._timer.stop()
-            self._timer = None
+            #self._timer = None
 
     def toxic_Reiterate(self,delay=0.0):
         """WARNING: this re-entrant iterate CAN AND WILL
