@@ -110,7 +110,7 @@ class QTReactor(PosixReactorBase):
         self._writes = {}
         self._timer=QTimer()
         self._timer.setSingleShot(True)
-        QObject.connect(self._timer, SIGNAL("timeout()"), self.simulate)
+        self._exitIntent=False
         
         if app is None:
             """ QCoreApplication doesn't require X or other GUI
@@ -155,11 +155,21 @@ class QTReactor(PosixReactorBase):
 
     def getWriters(self):
         return self._writes.keys()
-
+    
+    def callLater(self,howlong, *args, **kargs):
+        self.pingSimulate()
+        rval = super(QTReactor,self).callLater(howlong, *args, **kargs)
+        return rval    
+    
+    def crash(self):
+        super(QTReactor,self).crash()
+        self.cleanup()
+        self._crash()
+        self.qApp.exit()
 
     def pingSimulate(self):
-        if self.running:
-            self._timer.setInterval(0)
+        #if self._timer is not None: 
+        self._timer.start(0)
 
     def simulate(self):
         self._timer.stop()
@@ -174,6 +184,7 @@ class QTReactor(PosixReactorBase):
 
         timeout = self.timeout()
         if timeout is None:
+            if not self.running: self.qApp.exit(); return
             timeout = 1.0
         timeout = min(timeout, 0.1) * 1010
 
@@ -182,13 +193,6 @@ class QTReactor(PosixReactorBase):
             return
         self._timer.start(timeout)
         
-    """ need this to update when simulate is called back in
-    case its immediate (or sooner) """         
-    def callLater(self,howlong, *args, **kargs):
-        rval = super(QTReactor,self).callLater(howlong, *args, **kargs)
-        self.pingSimulate()
-        return rval    
-
     def cleanup(self):
         if self._timer is not None:
             self._timer.stop()
@@ -214,10 +218,9 @@ class QTReactor(PosixReactorBase):
         self._crashCall = self.callLater(delay, self._crash)
         self.run()
 
-
     def mainLoop(self):
-        self._timer.start(0) # effectively a call to simulate
-        #self.simulate()
+        QObject.connect(self._timer, SIGNAL("timeout()"), self.simulate)
+        self.pingSimulate() # effectively a call to simulate
         self.qApp.exec_()
 
     def _crash(self):
