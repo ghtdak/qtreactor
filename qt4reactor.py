@@ -158,7 +158,8 @@ class QTReactor(PosixReactorBase):
 
 
     def pingSimulate(self):
-        self._timer.setInterval(0)
+        if self.running:
+            self._timer.setInterval(0)
 
     def simulate(self):
         self._timer.stop()
