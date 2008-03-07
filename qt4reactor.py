@@ -95,6 +95,15 @@ class TwistedSocketNotifier(QSocketNotifier):
 class fakeApplication(QEventLoop):
     def __init__(self):
         QEventLoop.__init__(self)
+        
+    def exec_(self):
+        print 'entering exec_'
+        QEventLoop.exec_(self)
+        
+    def exit(self):
+        print 'exit called, leaving exec_'
+        QEventLoop.exit(self)
+        self.wakeUp()
 
 class QTReactor(PosixReactorBase):
     """
@@ -113,7 +122,6 @@ class QTReactor(PosixReactorBase):
         self._writes = {}
         self._timer=QTimer()
         self._timer.setSingleShot(True)
-        self._exitIntent=False
         
         if QCoreApplication.startingUp():
             """ 
@@ -121,9 +129,9 @@ class QTReactor(PosixReactorBase):
             own it for destruction.
             QCoreApplication doesn't require X or other GUI
             environment """
-            self.ownApp = QCoreApplication([])
-        else: 
-            self.ownApp = None
+            QCoreApplication([])
+            self.ownApp=True
+        else: self.ownApp=False
         
         PosixReactorBase.__init__(self)
         self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
@@ -172,7 +180,7 @@ class QTReactor(PosixReactorBase):
     def crash(self):
         super(QTReactor,self).crash()
         self.cleanup()
-        self._crash()
+        #self._crash()
         self.qApp.exit()
 
     def pingSimulate(self):
@@ -187,12 +195,11 @@ class QTReactor(PosixReactorBase):
             return
         self.runUntilCurrent()
 
-        if self._crashCall is not None:
-            self._crashCall.reset(0)
+        #if self._crashCall is not None:
+            #self._crashCall.reset(0)
 
         timeout = self.timeout()
         if timeout is None:
-            if not self.running: self.qApp.exit(); return
             timeout = 1.0
         timeout = min(timeout, 0.1) * 1010
 
@@ -222,26 +229,36 @@ class QTReactor(PosixReactorBase):
             self.qApp.processEvents(QEventLoop.AllEvents | 
                                     QEventLoop.WaitForMoreEvents,t*1000)
 
+    def run(self, installSignalHandlers=True):
+        self.startRunning(installSignalHandlers=installSignalHandlers)
+        print 'running state = ', self.running
+        #self._crashCall = self.callLater(100.0, self._crash)
+        self.mainLoop()
+    
     def iterate(self, delay=0.0):
-        self._crashCall = self.callLater(delay, self._crash)
-        self.run()
+        print 'someone called iterate...'
+        self.toxic_Reiterate(delay)
+        
+    def doIteration(self,delay):
+        print 'doIteration called'
 
     def mainLoop(self):
         QObject.connect(self._timer, SIGNAL("timeout()"), self.simulate)
         self.pingSimulate() # effectively a call to simulate
         self.qApp=fakeApplication()
-        print 'entering exec_...'
+        print 'entering fakeapp exec_ from mainloop...'
         self.qApp.exec_()
-        print 'leaving exec_...'
-        if self.ownApp is not None:
-            pass # for now
+        print 'leaving fakeapp exec_ from mainloop...'
         
-    def _crash(self):
-        if self._crashCall is not None:
-            if self._crashCall.active():
-                self._crashCall.cancel()
-            self._crashCall = None
-        self.running = False
+#===============================================================================
+#    def _crash(self):
+#        print 'crash called...'
+#        if self._crashCall is not None:
+#            if self._crashCall.active():
+#                self._crashCall.cancel()
+#            self._crashCall = None
+#        self.running = False
+#===============================================================================
 
 
 

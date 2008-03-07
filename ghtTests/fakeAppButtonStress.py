@@ -18,13 +18,13 @@ class doNothing(object):
     def buttonClick(self):
         if self.running:
             self.running=False
-            print 'calling reactor stop...'
+            print 'CLICK: calling reactor stop...'
             #self.t.stop()
             reactor.stop()
             print 'reactor stop called....'
         else:
             self.running=True
-            print 'entering run'
+            print 'CLICK: entering run'
             #self.t.start()
             reactor.run()
             print 'reactor run returned...'
