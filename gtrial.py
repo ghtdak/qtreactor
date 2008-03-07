@@ -31,7 +31,7 @@ def run():
     
     app.connect(button, SIGNAL("clicked()"), t.buttonClick)
     
-    engine.evaluate("button.text = 'Hello World!'")
+    engine.evaluate("button.text = 'Do Twisted Gui Trial'")
     engine.evaluate("button.styleSheet = 'font-style: italic'")
     engine.evaluate("button.show()")
     

@@ -124,6 +124,8 @@ class QTReactor(PosixReactorBase):
         self._writes = {}
         self._timer=QTimer()
         self._timer.setSingleShot(True)
+        self._watchdog=QTimer()
+        self._watchdog.setSingleShot(True)
         
         if QCoreApplication.startingUp():
             """ 
@@ -182,6 +184,13 @@ class QTReactor(PosixReactorBase):
         self.cleanup()
         #self._crash()
         self.qApp.exit()
+        
+    def pingWatchdog(self):
+        self._watchdog.start(200)
+        
+    def watchdogTimeout(self):
+        print '****************** Watchdog Death ****************'
+        self.crash()
 
     def pingSimulate(self):
         #if self._timer is not None: 
@@ -193,6 +202,8 @@ class QTReactor(PosixReactorBase):
         if not self.running: return
 
         self.runUntilCurrent()
+        
+        self.pingWatchdog()
 
         timeout = self.timeout()
         if timeout is None:
@@ -240,8 +251,10 @@ class QTReactor(PosixReactorBase):
 
     def mainLoop(self):
         QObject.connect(self._timer, SIGNAL("timeout()"), self.simulate)
+        QObject.connect(self._watchdog, SIGNAL("timeout()"), self.watchdogTimeout)
         self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
         self.pingSimulate() # effectively a call to simulate
+        self.pingWatchdog()
         self.qApp=fakeApplication()
         #print 'entering fakeapp exec_ from mainloop...'
         self.qApp.exec_()
