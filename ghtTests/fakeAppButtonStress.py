@@ -13,19 +13,19 @@ class doNothing(object):
     def __init__(self):
         self.count = 0
         self.running=False
-        #self.t = task.LoopingCall(self.printStat)
         
     def buttonClick(self):
         if self.running:
             self.running=False
             print 'CLICK: calling reactor stop...'
-            #self.t.stop()
+            self.t.stop()
             reactor.stop()
             print 'reactor stop called....'
         else:
             self.running=True
             print 'CLICK: entering run'
-            #self.t.start()
+            self.t = task.LoopingCall(self.printStat)
+            self.t.start(1.0)
             reactor.run()
             print 'reactor run returned...'
         

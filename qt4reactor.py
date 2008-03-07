@@ -97,13 +97,15 @@ class fakeApplication(QEventLoop):
         QEventLoop.__init__(self)
         
     def exec_(self):
-        print 'entering exec_'
+        #print 'entering exec_'
         QEventLoop.exec_(self)
         
-    def exit(self):
-        print 'exit called, leaving exec_'
-        QEventLoop.exit(self)
-        self.wakeUp()
+#===============================================================================
+#    def exit(self):
+#        print 'exit called, leaving exec_'
+#        QEventLoop.exit(self)
+#        self.wakeUp()
+#===============================================================================
 
 class QTReactor(PosixReactorBase):
     """
@@ -134,8 +136,6 @@ class QTReactor(PosixReactorBase):
         else: self.ownApp=False
         
         PosixReactorBase.__init__(self)
-        self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
-
 
     def addReader(self, reader):
         if not reader in self._reads:
@@ -190,27 +190,23 @@ class QTReactor(PosixReactorBase):
     def simulate(self):
         self._timer.stop()
 
-        if not self.running:
-            self.qApp.exit()
-            return
-        self.runUntilCurrent()
+        if not self.running: return
 
-        #if self._crashCall is not None:
-            #self._crashCall.reset(0)
+        self.runUntilCurrent()
 
         timeout = self.timeout()
         if timeout is None:
             timeout = 1.0
         timeout = min(timeout, 0.1) * 1010
 
-        if not self.running:
-            self.qApp.exit()
-            return
-        self._timer.start(timeout)
+        if self.running:
+            self._timer.start(timeout)
         
     def cleanup(self):
+        self.running=False # this shouldn't be necessary
         if self._timer is not None:
             self._timer.stop()
+            self.qApp.exit()
             #self._timer = None
 
     def toxic_Reiterate(self,delay=0.0):
@@ -231,37 +227,26 @@ class QTReactor(PosixReactorBase):
 
     def run(self, installSignalHandlers=True):
         self.startRunning(installSignalHandlers=installSignalHandlers)
-        print 'running state = ', self.running
         #self._crashCall = self.callLater(100.0, self._crash)
         self.mainLoop()
+        #print 'exiting mainloop running state = ', self.running
     
     def iterate(self, delay=0.0):
-        print 'someone called iterate...'
+        #print '********************* someone called iterate...'
         self.toxic_Reiterate(delay)
         
     def doIteration(self,delay):
-        print 'doIteration called'
+        assert False, 'nobody should call doIteration'
 
     def mainLoop(self):
         QObject.connect(self._timer, SIGNAL("timeout()"), self.simulate)
+        self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
         self.pingSimulate() # effectively a call to simulate
         self.qApp=fakeApplication()
-        print 'entering fakeapp exec_ from mainloop...'
+        #print 'entering fakeapp exec_ from mainloop...'
         self.qApp.exec_()
-        print 'leaving fakeapp exec_ from mainloop...'
+        #print 'leaving fakeapp exec_ from mainloop...'
         
-#===============================================================================
-#    def _crash(self):
-#        print 'crash called...'
-#        if self._crashCall is not None:
-#            if self._crashCall.active():
-#                self._crashCall.cancel()
-#            self._crashCall = None
-#        self.running = False
-#===============================================================================
-
-
-
 def install():
     """
     Configure the twisted mainloop to be run inside the qt mainloop.
