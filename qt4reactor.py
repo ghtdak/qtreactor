@@ -36,18 +36,6 @@ from twisted.internet.interfaces import IReactorFDSet
 from twisted.python import log
 from twisted.internet.posixbase import PosixReactorBase
 
-class fakeApplication(QEventLoop):
-    def __init__(self,reactor):
-        self.reactor=reactor
-        QEventLoop.__init__(self)
-        
-    def go(self):
-        QTimer.singleShot(0,self.doAllTheWork)
-        self.exec_()
-        
-    def doAllTheWork(self):
-        reactor.toxic_Reiterate(100.0)
-
 class TwistedSocketNotifier(QSocketNotifier):
     """
     Connection between an fd event and reader/writer callbacks.
@@ -102,6 +90,11 @@ class TwistedSocketNotifier(QSocketNotifier):
                 self.setEnabled(1)
         log.callWithLogger(w, _write)
         self.reactor.pingSimulate()
+        
+
+class fakeApplication(QEventLoop):
+    def __init__(self):
+        QEventLoop.__init__(self)
 
 class QTReactor(PosixReactorBase):
     """
@@ -115,19 +108,23 @@ class QTReactor(PosixReactorBase):
 
     _timer = None
 
-    def __init__(self, app=None):
+    def __init__(self):
         self._reads = {}
         self._writes = {}
         self._timer=QTimer()
         self._timer.setSingleShot(True)
         self._exitIntent=False
         
-        if app is None:
-            """ QCoreApplication doesn't require X or other GUI
+        if QCoreApplication.startingUp():
+            """ 
+            if there isn't an application object, we create one and
+            own it for destruction.
+            QCoreApplication doesn't require X or other GUI
             environment """
-            #app = QCoreApplication([])
-            app = fakeApplication()
-        self.qApp = app
+            self.ownApp = QCoreApplication([])
+        else: 
+            self.ownApp = None
+        
         PosixReactorBase.__init__(self)
         self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
 
@@ -232,8 +229,13 @@ class QTReactor(PosixReactorBase):
     def mainLoop(self):
         QObject.connect(self._timer, SIGNAL("timeout()"), self.simulate)
         self.pingSimulate() # effectively a call to simulate
+        self.qApp=fakeApplication()
+        print 'entering exec_...'
         self.qApp.exec_()
-
+        print 'leaving exec_...'
+        if self.ownApp is not None:
+            pass # for now
+        
     def _crash(self):
         if self._crashCall is not None:
             if self._crashCall.active():
@@ -243,10 +245,10 @@ class QTReactor(PosixReactorBase):
 
 
 
-def install(app=None):
+def install():
     """
     Configure the twisted mainloop to be run inside the qt mainloop.
     """
     from twisted.internet import main
-    reactor = QTReactor(app=app)
+    reactor = QTReactor()
     main.installReactor(reactor)
