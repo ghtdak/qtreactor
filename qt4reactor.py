@@ -36,7 +36,17 @@ from twisted.internet.interfaces import IReactorFDSet
 from twisted.python import log
 from twisted.internet.posixbase import PosixReactorBase
 
-
+class fakeApplication(QEventLoop):
+    def __init__(self,reactor):
+        self.reactor=reactor
+        QEventLoop.__init__(self)
+        
+    def go(self):
+        QTimer.singleShot(0,self.doAllTheWork)
+        self.exec_()
+        
+    def doAllTheWork(self):
+        reactor.toxic_Reiterate(100.0)
 
 class TwistedSocketNotifier(QSocketNotifier):
     """
@@ -115,7 +125,8 @@ class QTReactor(PosixReactorBase):
         if app is None:
             """ QCoreApplication doesn't require X or other GUI
             environment """
-            app = QCoreApplication([])
+            #app = QCoreApplication([])
+            app = fakeApplication()
         self.qApp = app
         PosixReactorBase.__init__(self)
         self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
