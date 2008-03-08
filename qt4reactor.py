@@ -202,7 +202,7 @@ class QTReactor(PosixReactorBase):
     def simulate(self):
         self._timer.stop()
 
-        if not self.running: return
+        #if not self.running: return
 
         self.runUntilCurrent()
         
@@ -213,23 +213,22 @@ class QTReactor(PosixReactorBase):
             timeout = 1.0
         timeout = min(timeout, 0.1) * 1010
 
-        if self.running:
-            self._timer.start(timeout)
+        #if self.running:
+        self._timer.start(timeout)
         
     def cleanup(self):
-        self.running=False # this shouldn't be necessary
+        #self.running=False # this shouldn't be necessary
         if self._timer is not None:
             self._timer.stop()
             self.qApp.exit()
             #self._timer = None
 
     def toxic_Reiterate(self,delay=0.0):
-        """WARNING: this re-entrant iterate CAN AND WILL
+        """
+        WARNING: this re-entrant iterate CAN AND WILL
         have dire and unintended consequences for all those
         who attempt usage without the proper clearances.
-        
-        May the wrath of exarkun be upon the houses of 
-        all ye who enter here """
+        """
         if not self._timer.isActive():
             self._timer.start(0)
         endTime = time.time() + delay
@@ -237,7 +236,7 @@ class QTReactor(PosixReactorBase):
             t = endTime - time.time()
             if t <= 0.0: return
             self.qApp.processEvents(QEventLoop.AllEvents | 
-                                    QEventLoop.WaitForMoreEvents,t*1000)
+                                    QEventLoop.WaitForMoreEvents,t*1010)
 
     def run(self, installSignalHandlers=True):
         self.startRunning(installSignalHandlers=installSignalHandlers)
