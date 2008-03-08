@@ -55,7 +55,7 @@ class TwistedSocketNotifier(QSocketNotifier):
 
     def shutdown(self):
         QObject.disconnect(self, SIGNAL("activated(int)"), self.fn)
-        self.setEnabled(0)
+        self.setEnabled(False)
         self.fn = self.watcher = None
 
 
@@ -65,11 +65,14 @@ class TwistedSocketNotifier(QSocketNotifier):
             why = None
             try:
                 why = w.doRead()
+                self.setEnabled(False)                
             except:
                 log.err()
                 why = sys.exc_info()[1]
             if why:
                 self.reactor._disconnectSelectable(w, why, True)
+            elif self.watcher:
+                self.setEnabled(True)
         log.callWithLogger(w, _read)
         self.reactor.pingSimulate()
 
@@ -78,7 +81,7 @@ class TwistedSocketNotifier(QSocketNotifier):
         w = self.watcher
         def _write():
             why = None
-            self.setEnabled(0)
+            self.setEnabled(False)
             try:
                 why = w.doWrite()
             except:
@@ -87,7 +90,7 @@ class TwistedSocketNotifier(QSocketNotifier):
             if why:
                 self.reactor._disconnectSelectable(w, why, False)
             elif self.watcher:
-                self.setEnabled(1)
+                self.setEnabled(True)
         log.callWithLogger(w, _write)
         self.reactor.pingSimulate()
         
