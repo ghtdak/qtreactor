@@ -61,11 +61,12 @@ class TwistedSocketNotifier(QSocketNotifier):
 
     def read(self, sock):
         w = self.watcher
+        self.setEnabled(False)                
         def _read():
             why = None
             try:
+                self.reactor.simulate()
                 why = w.doRead()
-                self.setEnabled(False)                
             except:
                 log.err()
                 why = sys.exc_info()[1]
@@ -79,10 +80,11 @@ class TwistedSocketNotifier(QSocketNotifier):
 
     def write(self, sock):
         w = self.watcher
+        self.setEnabled(False)
         def _write():
             why = None
-            self.setEnabled(False)
             try:
+                self.reactor.simulate()
                 why = w.doWrite()
             except:
                 log.err()
@@ -255,9 +257,13 @@ class QTReactor(PosixReactorBase):
         QObject.connect(self._timer, SIGNAL("timeout()"), self.simulate)
         QObject.connect(self._watchdog, SIGNAL("timeout()"), self.watchdogTimeout)
         self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
-        self.pingSimulate() # effectively a call to simulate
-        self.pingWatchdog()
-        self.qApp=fakeApplication()
+        #self.pingSimulate()
+        #self.pingWatchdog()
+        #self._timer.start(0)
+        if self.ownApp:
+            self.qApp = QCoreApplication.instance()
+        else:
+            self.qApp=fakeApplication()
         #print 'entering fakeapp exec_ from mainloop...'
         self.qApp.exec_()
         #print 'leaving fakeapp exec_ from mainloop...'
