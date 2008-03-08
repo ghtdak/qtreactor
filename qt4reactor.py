@@ -180,13 +180,13 @@ class QTReactor(PosixReactorBase):
         return rval    
     
     def crash(self):
-        super(QTReactor,self).crash()
         self.cleanup()
+        super(QTReactor,self).crash()
         #self._crash()
-        self.qApp.exit()
+        #self.qApp.exit()
         
     def pingWatchdog(self):
-        self._watchdog.start(200)
+        self._watchdog.start(2000)
         
     def watchdogTimeout(self):
         print '****************** Watchdog Death ****************'
