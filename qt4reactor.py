@@ -242,9 +242,16 @@ class QTReactor(PosixReactorBase):
 
     def run(self, installSignalHandlers=True):
         self.startRunning(installSignalHandlers=installSignalHandlers)
-        #self._crashCall = self.callLater(100.0, self._crash)
-        self.mainLoop()
-        #print 'exiting mainloop running state = ', self.running
+        QObject.connect(self._timer, SIGNAL("timeout()"), self.simulate)
+        QObject.connect(self._watchdog, SIGNAL("timeout()"), self.watchdogTimeout)
+        self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
+        self.pingSimulate()
+        self.pingWatchdog()
+        if self.ownApp:
+            self.qApp = QCoreApplication.instance()
+        else:
+            self.qApp=fakeApplication()
+        self.qApp.exec_()
     
     def iterate(self, delay=0.0):
         #print '********************* someone called iterate...'
@@ -253,21 +260,6 @@ class QTReactor(PosixReactorBase):
     def doIteration(self,delay):
         assert False, 'nobody should call doIteration'
 
-    def mainLoop(self):
-        QObject.connect(self._timer, SIGNAL("timeout()"), self.simulate)
-        QObject.connect(self._watchdog, SIGNAL("timeout()"), self.watchdogTimeout)
-        self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
-        #self.pingSimulate()
-        #self.pingWatchdog()
-        #self._timer.start(0)
-        if self.ownApp:
-            self.qApp = QCoreApplication.instance()
-        else:
-            self.qApp=fakeApplication()
-        #print 'entering fakeapp exec_ from mainloop...'
-        self.qApp.exec_()
-        #print 'leaving fakeapp exec_ from mainloop...'
-        
 def install():
     """
     Configure the twisted mainloop to be run inside the qt mainloop.
