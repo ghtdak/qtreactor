@@ -1,6 +1,6 @@
 import sys
 from PyQt4 import QtGui, QtScript
-from PyQt4.QtCore import QTimer, SIGNAL
+from PyQt4.QtCore import QTimer, SIGNAL, QObject
 import qt4reactor
 
 app = QtGui.QApplication(sys.argv)
@@ -10,11 +10,12 @@ from twisted.internet import reactor, task
 from twisted.python import log
 log.startLogging(sys.stdout)
 
-class doNothing(object):
+class doNothing(QObject):
     def __init__(self):
         self.count = 0
         self.looping=False
         task.LoopingCall(self.printStat).start(1.0)
+        QObject.__init__(self)
         
     def doSomething(self):
         if not self.looping: return

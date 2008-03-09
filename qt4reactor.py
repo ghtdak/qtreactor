@@ -177,7 +177,8 @@ class QTReactor(PosixReactorBase):
     def callLater(self,howlong, *args, **kargs):
         rval = super(QTReactor,self).callLater(howlong, *args, **kargs)
         self.qApp.emit(SIGNAL("twistedEvent"),'c')
-        return rval    
+        #self.qApp.callLaterSignal()
+        return rval
     
     def crash(self):
         super(QTReactor,self).crash()
@@ -218,6 +219,8 @@ class QTReactor(PosixReactorBase):
     def runReturn(self, installSignalHandlers=True):
         QObject.connect(self.qApp,SIGNAL("twistedEvent"),
                         self.reactorInvocation)
+        #QObject.connect(self.qApp,SIGNAL("callLaterSignal()"),
+        #                self.reactorInvocation)
         QObject.connect(self._timer, SIGNAL("timeout()"), 
                         self.reactorInvoke)
         self.startRunning(installSignalHandlers=installSignalHandlers)

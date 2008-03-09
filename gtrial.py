@@ -9,7 +9,7 @@ qt4reactor.install()
 
 from twisted.internet import reactor, task
 
-class doNothing(object):
+class doNothing(QObject):
     def __init__(self):
         self.count = 0
         self.running=False
