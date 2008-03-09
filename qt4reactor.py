@@ -75,7 +75,7 @@ class TwistedSocketNotifier(QSocketNotifier):
             elif self.watcher:
                 self.setEnabled(True)
         log.callWithLogger(w, _read)
-        self.reactor.pingSimulate()
+        #self.reactor.pingSimulate()
 
 
     def write(self, sock):
@@ -94,7 +94,7 @@ class TwistedSocketNotifier(QSocketNotifier):
             elif self.watcher:
                 self.setEnabled(True)
         log.callWithLogger(w, _write)
-        self.reactor.pingSimulate()
+        #self.reactor.pingSimulate()
         
 
 class fakeApplication(QEventLoop):
@@ -185,10 +185,9 @@ class QTReactor(PosixReactorBase):
         return rval    
     
     def crash(self):
-        self.cleanup()
         super(QTReactor,self).crash()
         #self._crash()
-        #self.qApp.exit()
+        self.qApp.exit()
         
     def pingWatchdog(self):
         self._watchdog.start(2000)
