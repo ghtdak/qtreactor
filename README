@@ -1,18 +1,32 @@
-This seems to be working.
+As I learned Qt, I finally understood how they want you to do things,
+so this is prettty much a complete rewrite from previous versions in
+the thread of development.
 
-Some core design changes.  There was a bunch of destructing and
-constructing of the same timer object.  Now there is one timer
-responsible for simulate and everything invokes a call to simulate
-through that timer.  A convenience method, pingSimulate, is provided
-which sets the timer to timeout immediately.
+Everything is pretty much done with signals now.  In addition, if
+you're writing a conventional Qt application and just want twisted as
+an addon, you can get that by calling reactor.runReturn() instead of
+run().  Run blocks, but blocks artifically.  Stoppping and rerunning
+the reactor seems to work fine... Qt is the event engine that drives
+it all regardless.
 
-There appears to be a significant performance advantage which stands
-to reason.  Additionally, this method avoids any recursion through the
-various methods which require simulate to run immediately.
+There is a way to run trial using a gui... in bin, there is a routine
+gtrial.  Put that in the same directory as trial and it pops up a
+trivial gui... hit the buton and it all runs the same... don't use the
+--reactor option when calling gtrial... but all the other options
+appear to work.  This was just to make sure there wasn't anything
+strange with guis which there doesn't appear to be
+
+using twisted's trial also works... make sure the qtreactor directory
+is in your PYHONPATH and just use the --reactor=qt4 option
 
 Note that if a QApplication or QCoreApplication instance isn't
-provided at reactor installation, a default QCoreApplication is
-constructed.
+constructed prior to calling reactor run, an internally owned
+QCoreApplication is created and destroyed. This won't work if you call
+runReturn instead of run unless you take responsibility for wacking
+QCoreApplication yourself...
+
+However, most users want this reactor to do gui stuff so this
+shouldn't be an issue.
 
 Included in this directory is a diff of trial's stdout between the
 default reactor and the Qt4 reactor.  The large time differences are
@@ -23,3 +37,9 @@ its very good :-)
 # trial twisted $> /tmp/select.trial
 # trial --unclean-warnings --reactor=qt4 twisted &> /tmp/qt4.trial
 # diff /tmp/select.trial /tmp/qt4.trial > trial.diff
+
+-glenn
+
+--
+Glenn H. Tarbox, PhD
+glenn@tarbox.org

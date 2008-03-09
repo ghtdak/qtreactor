@@ -74,10 +74,8 @@ class TwistedSocketNotifier(QSocketNotifier):
             elif self.watcher:
                 pass
                 #self.setEnabled(True)
-        #self.reactor.addReadWrite((w, _read))
         log.callWithLogger(w, _read)
-        #self.reactor.pingSimulate()
-
+        self.reactor.qApp.emit(SIGNAL("twistedEvent"),'c')
 
     def write(self, sock):
         w = self.watcher
@@ -93,16 +91,14 @@ class TwistedSocketNotifier(QSocketNotifier):
                 self.reactor._disconnectSelectable(w, why, False)
             elif self.watcher:
                 self.setEnabled(True)
-        #self.reactor.addReadWrite((w, _write))
         log.callWithLogger(w, _write)
-        #self.reactor.pingSimulate()
-        
+        self.reactor.qApp.emit(SIGNAL("twistedEvent"),'c')
 
 class fakeApplication(QEventLoop):
     def __init__(self):
         QEventLoop.__init__(self)
         
-    def go(self):
+    def exec_(self):
         #print 'entering exec_'
         QEventLoop.exec_(self)
         
@@ -131,7 +127,12 @@ class QTReactor(PosixReactorBase):
         self._readWriteQ=[]
         self._timer=QTimer()
         self._timer.setSingleShot(True)
-        self.qApp = QCoreApplication.instance()
+        if QCoreApplication.startingUp():
+            self.qApp=QCoreApplication([])
+            self._ownApp=True
+        else:
+            self.qApp = QCoreApplication.instance()
+            self._ownApp=False
         self._blockApp = None
         self._signalCatcher = signalCatcher()
         
@@ -177,23 +178,16 @@ class QTReactor(PosixReactorBase):
     
     def callLater(self,howlong, *args, **kargs):
         rval = super(QTReactor,self).callLater(howlong, *args, **kargs)
-        #self.qApp.emit(SIGNAL("twistedEvent"),'c')
-        self._signalCatcher.callLaterSignal()
+        self.qApp.emit(SIGNAL("twistedEvent"),'c')
+        #self._signalCatcher.callLaterSignal()
         return rval
     
     def crash(self):
         super(QTReactor,self).crash()
         
-    def pingWatchdog(self):
-        self._watchdog.start(2000)
-        
-    def watchdogTimeout(self):
-        print '****************** Watchdog Death ****************'
-        self.crash()
-
     def cleanup(self):
-        print 'cleanup'
-        self.iterate() # cleanup pending events?
+        #print 'cleanup'
+        self.iterate(0.1) # cleanup pending events?
         self.running=False
         #self.iterate() # cleanup pending events?
         self.qApp.emit(SIGNAL("twistedEvent"),'shutdown')
@@ -220,6 +214,10 @@ class QTReactor(PosixReactorBase):
     def runReturn(self, installSignalHandlers=True):
         QObject.connect(self.qApp,SIGNAL("twistedEvent"),
                         self.reactorInvocation)
+#===============================================================================
+#        QObject.connect(self._signalCatcher,SIGNAL("twistedEvent"),
+#                        self.reactorInvocation)
+#===============================================================================
         QObject.connect(self._timer, SIGNAL("timeout()"), 
                         self.reactorInvoke)
         self.startRunning(installSignalHandlers=installSignalHandlers)
@@ -230,9 +228,12 @@ class QTReactor(PosixReactorBase):
         
     def run(self, installSignalHandlers=True):
         try:
-            self._blockApp = fakeApplication()
+            if self._ownApp:
+                self._blockApp=self.qApp
+            else:
+                self._blockApp = fakeApplication()
             self.runReturn(installSignalHandlers)
-            self._blockApp.go()
+            self._blockApp.exec_()
         finally:
             self._blockApp=None
 
