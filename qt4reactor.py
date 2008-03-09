@@ -188,7 +188,9 @@ class QTReactor(PosixReactorBase):
         self.crash()
 
     def cleanup(self):
-        self.qApp.emit(SIGNAL("twistedShutdown"),'shutdown')
+        print 'cleanup'
+        self.running=False
+        self.qApp.emit(SIGNAL("twistedEvent"),'shutdown')
 
     def toxic_Reiterate(self,delay=0.0):
         """
@@ -234,6 +236,7 @@ class QTReactor(PosixReactorBase):
             self.runUntilCurrent()
             t2 = self.timeout()
             t = self.running and t2
+            if t is None: t=1.0
             self._timer.start(t*1010)
             self.doIteration(99999)
                 
