@@ -106,12 +106,12 @@ class fakeApplication(QEventLoop):
         #print 'entering exec_'
         QEventLoop.exec_(self)
         
-#===============================================================================
-#    def exit(self):
-#        print 'exit called, leaving exec_'
-#        QEventLoop.exit(self)
-#        self.wakeUp()
-#===============================================================================
+class signalCatcher(QObject):
+    def __init__(self):
+        QObject.__init__(self)
+        
+    def callLaterSignal(self):
+        self.emit(SIGNAL("twistedEvent"),'c')
 
 class QTReactor(PosixReactorBase):
     """
@@ -133,6 +133,7 @@ class QTReactor(PosixReactorBase):
         self._timer.setSingleShot(True)
         self.qApp = QCoreApplication.instance()
         self._blockApp = None
+        self._signalCatcher = signalCatcher()
         
         """ some debugging instrumentation """
         self._doSomethingCount=0
@@ -176,8 +177,8 @@ class QTReactor(PosixReactorBase):
     
     def callLater(self,howlong, *args, **kargs):
         rval = super(QTReactor,self).callLater(howlong, *args, **kargs)
-        self.qApp.emit(SIGNAL("twistedEvent"),'c')
-        #self.qApp.callLaterSignal()
+        #self.qApp.emit(SIGNAL("twistedEvent"),'c')
+        self._signalCatcher.callLaterSignal()
         return rval
     
     def crash(self):
@@ -219,8 +220,6 @@ class QTReactor(PosixReactorBase):
     def runReturn(self, installSignalHandlers=True):
         QObject.connect(self.qApp,SIGNAL("twistedEvent"),
                         self.reactorInvocation)
-        #QObject.connect(self.qApp,SIGNAL("callLaterSignal()"),
-        #                self.reactorInvocation)
         QObject.connect(self._timer, SIGNAL("timeout()"), 
                         self.reactorInvoke)
         self.startRunning(installSignalHandlers=installSignalHandlers)
@@ -244,7 +243,7 @@ class QTReactor(PosixReactorBase):
     
     def reactorInvocation(self):
         self._timer.setInterval(0)
-    
+        
     def reactorInvoke(self):
         self._doSomethingCount += 1
         if self.running:
