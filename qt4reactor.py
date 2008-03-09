@@ -128,9 +128,9 @@ class QTReactor(PosixReactorBase):
         self._reads = {}
         self._writes = {}
         self._readWriteQ=[]
-        self._watchdog=QTimer()
-        self._watchdog.setSingleShot(True)
-        self._callLaterCalled=False
+        self._timer=QTimer()
+        self._timer.setSingleShot(True)
+        self.qApp = QCoreApplication.instance()
         
         """ some debugging instrumentation """
         self._doSomethingCount=0
@@ -173,8 +173,8 @@ class QTReactor(PosixReactorBase):
         return self._writes.keys()
     
     def callLater(self,howlong, *args, **kargs):
-        self._callLaterCalled=True
         rval = super(QTReactor,self).callLater(howlong, *args, **kargs)
+        self.qApp.emit(SIGNAL("twistedEvent"),'c')
         return rval    
     
     def crash(self):
@@ -188,7 +188,7 @@ class QTReactor(PosixReactorBase):
         self.crash()
 
     def cleanup(self):
-        pass
+        self.qApp.emit(SIGNAL("twistedShutdown"),'shutdown')
 
     def toxic_Reiterate(self,delay=0.0):
         """
@@ -207,23 +207,42 @@ class QTReactor(PosixReactorBase):
             
     def addReadWrite(self,t):
         self._readWriteQ.append(t)
+        self.qApp.emit(SIGNAL("twistedEvent"),'fileIO')
+        
+    def run(self, installSignalHandlers=True):
+        QObject.connect(self.qApp,SIGNAL("twistedEvent"),
+                        self.reactorInvocation)
+        QObject.connect(self._timer, SIGNAL("timeout()"), 
+                        self.reactorInvoke)
+        self.startRunning(installSignalHandlers=installSignalHandlers)
+        self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
+        self.qApp.emit(SIGNAL("twistedEvent"),'startup')
+        QTimer.singleShot(101,self.slowPoll)
+        self._timer.start(0)
 
-    def doIteration(self,delay):
-        aep = QCoreApplication.instance()
-        endTime = delay + time.time()
+    def slowPoll(self):
+        self.qApp.emit(SIGNAL("twistedEvent"),'slowpoll')
+        if self.running:
+            QTimer.singleShot(101,self.slowPoll)
+    
+    def reactorInvocation(self):
+        self._timer.setInterval(0)
+    
+    def reactorInvoke(self):
         self._doSomethingCount += 1
-        try:
-            while not self._callLaterCalled:
-                t = endTime - time.time()
-                if t <= 0.0: return               
-                aep.processEvents(QEventLoop.AllEvents, t*1010)
-                if len(self._readWriteQ) > 0: 
-                    for i in self._readWriteQ:
-                        log.callWithLogger(i[0], i[1])
-                        _readWriteQ=[]
-                    return
-        finally:
-            self._callLaterCalled=False
+        if self.running:
+            self.runUntilCurrent()
+            t2 = self.timeout()
+            t = self.running and t2
+            self._timer.start(t*1010)
+            self.doIteration(99999)
+                
+    def doReactorEvent(self,delay):
+        for i in self._readWriteQ:
+            log.callWithLogger(i[0], i[1])
+        _readWriteQ=[]
+            
+    doIteration = doReactorEvent
             
     def iterate(self, delay=0.0):
         #print '********************* someone called iterate...'
