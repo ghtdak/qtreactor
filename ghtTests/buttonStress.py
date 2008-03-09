@@ -4,7 +4,7 @@ from PyQt4.QtCore import QTimer, SIGNAL
 import qt4reactor
 
 app = QtGui.QApplication(sys.argv)
-qt4reactor.install(app)
+qt4reactor.install()
 
 from twisted.internet import reactor, task
 from twisted.python import log
@@ -31,14 +31,9 @@ class doNothing(object):
             log.msg('looping started....')
         
     def printStat(self):
-#===============================================================================
-#        log.msg(' c: ' + str(self.count) + 
-#                ' st: ' + str(reactor.simCount) +
-#                ' rw: ' + str(reactor.rwsimCount) +
-#                ' to: ' + str(reactor.tm))
-#===============================================================================
+        log.msg(' c: ' + str(self.count) + 
+                ' st: ' + str(reactor._doSomethingCount))
 
-        log.msg('c:' + str(self.count))
 
 t=doNothing()
 

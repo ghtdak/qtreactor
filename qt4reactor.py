@@ -30,7 +30,7 @@ import sys, time
 from zope.interface import implements
 
 from PyQt4.QtCore import QSocketNotifier, QObject, SIGNAL, QTimer, QCoreApplication
-from PyQt4.QtCore import QEventLoop
+from PyQt4.QtCore import QEventLoop, QAbstractEventDispatcher
 
 from twisted.internet.interfaces import IReactorFDSet
 from twisted.python import log
@@ -65,7 +65,6 @@ class TwistedSocketNotifier(QSocketNotifier):
         def _read():
             why = None
             try:
-                self.reactor.simulate()
                 why = w.doRead()
             except:
                 log.err()
@@ -74,7 +73,8 @@ class TwistedSocketNotifier(QSocketNotifier):
                 self.reactor._disconnectSelectable(w, why, True)
             elif self.watcher:
                 self.setEnabled(True)
-        log.callWithLogger(w, _read)
+        self.reactor.addReadWrite((w, _read))
+        #log.callWithLogger(w, _read)
         #self.reactor.pingSimulate()
 
 
@@ -84,7 +84,6 @@ class TwistedSocketNotifier(QSocketNotifier):
         def _write():
             why = None
             try:
-                self.reactor.simulate()
                 why = w.doWrite()
             except:
                 log.err()
@@ -93,7 +92,8 @@ class TwistedSocketNotifier(QSocketNotifier):
                 self.reactor._disconnectSelectable(w, why, False)
             elif self.watcher:
                 self.setEnabled(True)
-        log.callWithLogger(w, _write)
+        self.reactor.addReadWrite((w, _write))
+        #log.callWithLogger(w, _write)
         #self.reactor.pingSimulate()
         
 
@@ -127,20 +127,12 @@ class QTReactor(PosixReactorBase):
     def __init__(self):
         self._reads = {}
         self._writes = {}
-        self._timer=QTimer()
-        self._timer.setSingleShot(True)
+        self._readWriteQ=[]
         self._watchdog=QTimer()
         self._watchdog.setSingleShot(True)
         
-        if QCoreApplication.startingUp():
-            """ 
-            if there isn't an application object, we create one and
-            own it for destruction.
-            QCoreApplication doesn't require X or other GUI
-            environment """
-            QCoreApplication([])
-            self.ownApp=True
-        else: self.ownApp=False
+        """ some debugging instrumentation """
+        self._doSomethingCount=0
         
         PosixReactorBase.__init__(self)
 
@@ -180,14 +172,11 @@ class QTReactor(PosixReactorBase):
         return self._writes.keys()
     
     def callLater(self,howlong, *args, **kargs):
-        self.pingSimulate()
         rval = super(QTReactor,self).callLater(howlong, *args, **kargs)
         return rval    
     
     def crash(self):
         super(QTReactor,self).crash()
-        #self._crash()
-        self.qApp.exit()
         
     def pingWatchdog(self):
         self._watchdog.start(2000)
@@ -196,33 +185,8 @@ class QTReactor(PosixReactorBase):
         print '****************** Watchdog Death ****************'
         self.crash()
 
-    def pingSimulate(self):
-        #if self._timer is not None: 
-        self._timer.start(0)
-
-    def simulate(self):
-        self._timer.stop()
-
-        #if not self.running: return
-
-        self.runUntilCurrent()
-        
-        self.pingWatchdog()
-
-        timeout = self.timeout()
-        if timeout is None:
-            timeout = 1.0
-        timeout = min(timeout, 0.1) * 1010
-
-        #if self.running:
-        self._timer.start(timeout)
-        
     def cleanup(self):
-        #self.running=False # this shouldn't be necessary
-        if self._timer is not None:
-            self._timer.stop()
-            self.qApp.exit()
-            #self._timer = None
+        pass
 
     def toxic_Reiterate(self,delay=0.0):
         """
@@ -238,19 +202,45 @@ class QTReactor(PosixReactorBase):
             if t <= 0.0: return
             self.qApp.processEvents(QEventLoop.AllEvents | 
                                     QEventLoop.WaitForMoreEvents,t*1010)
+            
+    def addReadWrite(self,t):
+        self._readWriteQ.append(t)
 
     def run(self, installSignalHandlers=True):
         self.startRunning(installSignalHandlers=installSignalHandlers)
-        QObject.connect(self._timer, SIGNAL("timeout()"), self.simulate)
         QObject.connect(self._watchdog, SIGNAL("timeout()"), self.watchdogTimeout)
         self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
-        self.pingSimulate()
+        aep = QCoreApplication.instance()
         self.pingWatchdog()
-        if self.ownApp:
-            self.qApp = QCoreApplication.instance()
+        try:
+            self.timeout()
+            self.runUntilCurrent()
+            while self.running:
+                t = self.getNextTime()*1010                
+                aep.processEvents(QEventLoop.AllEvents | 
+                                  QEventLoop.WaitForMoreEvents, t)
+                self.doSomething()
+                self.pingWatchdog()
+            self._watchdog.stop()
+        except:
+            log.msg("Unexpected error in main loop.")
+            log.deferr()
         else:
-            self.qApp=fakeApplication()
-        self.qApp.exec_()
+            log.msg('Main loop terminated.')
+            
+    def getNextTime(self):
+        c = self.getDelayedCalls()
+        t=time.time()
+        return min([x.getTime() - t for x in c if x.active()])
+
+    def doSomething(self):
+        self._doSomethingCount += 1
+        self.timeout()
+        self.runUntilCurrent()
+        for i in self._readWriteQ:
+            log.callWithLogger(i[0], i[1])
+        _readWriteQ=[]
+        
     
     def iterate(self, delay=0.0):
         #print '********************* someone called iterate...'
