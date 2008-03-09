@@ -191,7 +191,9 @@ class QTReactor(PosixReactorBase):
 
     def cleanup(self):
         print 'cleanup'
+        self.iterate() # cleanup pending events?
         self.running=False
+        #self.iterate() # cleanup pending events?
         self.qApp.emit(SIGNAL("twistedEvent"),'shutdown')
 
     def toxic_Reiterate(self,delay=0.0):
@@ -202,6 +204,7 @@ class QTReactor(PosixReactorBase):
         """
         app=QCoreApplication.instance()
         endTime = delay + time.time()
+        app.processEvents() # gotta do at least one
         while True:
             t = endTime - time.time()
             if t <= 0.0: return
