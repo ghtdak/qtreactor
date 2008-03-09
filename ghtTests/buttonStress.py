@@ -49,7 +49,7 @@ engine.evaluate("button.text = 'Hello World!'")
 engine.evaluate("button.styleSheet = 'font-style: italic'")
 engine.evaluate("button.show()")
 
-reactor.run()
+reactor.runReturn()
 app.exec_()
 log.msg('fell off the bottom?...')
 

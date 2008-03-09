@@ -61,7 +61,7 @@ class TwistedSocketNotifier(QSocketNotifier):
 
     def read(self, sock):
         w = self.watcher
-        self.setEnabled(False)                
+        #self.setEnabled(False)                
         def _read():
             why = None
             try:
@@ -72,9 +72,10 @@ class TwistedSocketNotifier(QSocketNotifier):
             if why:
                 self.reactor._disconnectSelectable(w, why, True)
             elif self.watcher:
-                self.setEnabled(True)
-        self.reactor.addReadWrite((w, _read))
-        #log.callWithLogger(w, _read)
+                pass
+                #self.setEnabled(True)
+        #self.reactor.addReadWrite((w, _read))
+        log.callWithLogger(w, _read)
         #self.reactor.pingSimulate()
 
 
@@ -92,8 +93,8 @@ class TwistedSocketNotifier(QSocketNotifier):
                 self.reactor._disconnectSelectable(w, why, False)
             elif self.watcher:
                 self.setEnabled(True)
-        self.reactor.addReadWrite((w, _write))
-        #log.callWithLogger(w, _write)
+        #self.reactor.addReadWrite((w, _write))
+        log.callWithLogger(w, _write)
         #self.reactor.pingSimulate()
         
 
@@ -101,7 +102,7 @@ class fakeApplication(QEventLoop):
     def __init__(self):
         QEventLoop.__init__(self)
         
-    def exec_(self):
+    def go(self):
         #print 'entering exec_'
         QEventLoop.exec_(self)
         
@@ -131,6 +132,7 @@ class QTReactor(PosixReactorBase):
         self._timer=QTimer()
         self._timer.setSingleShot(True)
         self.qApp = QCoreApplication.instance()
+        self._blockApp = None
         
         """ some debugging instrumentation """
         self._doSomethingCount=0
@@ -198,20 +200,19 @@ class QTReactor(PosixReactorBase):
         have dire and unintended consequences for all those
         who attempt usage without the proper clearances.
         """
-        if not self._timer.isActive():
-            self._timer.start(0)
-        endTime = time.time() + delay
+        app=QCoreApplication.instance()
+        endTime = delay + time.time()
         while True:
             t = endTime - time.time()
             if t <= 0.0: return
-            self.qApp.processEvents(QEventLoop.AllEvents | 
-                                    QEventLoop.WaitForMoreEvents,t*1010)
+            app.processEvents(QEventLoop.AllEvents | 
+                              QEventLoop.WaitForMoreEvents,t*1010)
             
     def addReadWrite(self,t):
         self._readWriteQ.append(t)
         self.qApp.emit(SIGNAL("twistedEvent"),'fileIO')
         
-    def run(self, installSignalHandlers=True):
+    def runReturn(self, installSignalHandlers=True):
         QObject.connect(self.qApp,SIGNAL("twistedEvent"),
                         self.reactorInvocation)
         QObject.connect(self._timer, SIGNAL("timeout()"), 
@@ -221,6 +222,14 @@ class QTReactor(PosixReactorBase):
         self.qApp.emit(SIGNAL("twistedEvent"),'startup')
         QTimer.singleShot(101,self.slowPoll)
         self._timer.start(0)
+        
+    def run(self, installSignalHandlers=True):
+        try:
+            self._blockApp = fakeApplication()
+            self.runReturn(installSignalHandlers)
+            self._blockApp.go()
+        finally:
+            self._blockApp=None
 
     def slowPoll(self):
         self.qApp.emit(SIGNAL("twistedEvent"),'slowpoll')
@@ -239,6 +248,9 @@ class QTReactor(PosixReactorBase):
             if t is None: t=1.0
             self._timer.start(t*1010)
             self.doIteration(99999)
+        else:
+            if self._blockApp is not None:
+                self._blockApp.quit()
                 
     def doReactorEvent(self,delay):
         for i in self._readWriteQ:
