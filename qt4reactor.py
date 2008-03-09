@@ -130,6 +130,7 @@ class QTReactor(PosixReactorBase):
         self._readWriteQ=[]
         self._watchdog=QTimer()
         self._watchdog.setSingleShot(True)
+        self._callLaterCalled=False
         
         """ some debugging instrumentation """
         self._doSomethingCount=0
@@ -172,6 +173,7 @@ class QTReactor(PosixReactorBase):
         return self._writes.keys()
     
     def callLater(self,howlong, *args, **kargs):
+        self._callLaterCalled=True
         rval = super(QTReactor,self).callLater(howlong, *args, **kargs)
         return rval    
     
@@ -206,49 +208,27 @@ class QTReactor(PosixReactorBase):
     def addReadWrite(self,t):
         self._readWriteQ.append(t)
 
-    def run(self, installSignalHandlers=True):
-        self.startRunning(installSignalHandlers=installSignalHandlers)
-        QObject.connect(self._watchdog, SIGNAL("timeout()"), self.watchdogTimeout)
-        self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
+    def doIteration(self,delay):
         aep = QCoreApplication.instance()
-        self.pingWatchdog()
-        try:
-            self.timeout()
-            self.runUntilCurrent()
-            while self.running:
-                t = self.getNextTime()*1010                
-                aep.processEvents(QEventLoop.AllEvents | 
-                                  QEventLoop.WaitForMoreEvents, t)
-                self.doSomething()
-                self.pingWatchdog()
-            self._watchdog.stop()
-        except:
-            log.msg("Unexpected error in main loop.")
-            log.deferr()
-        else:
-            log.msg('Main loop terminated.')
-            
-    def getNextTime(self):
-        c = self.getDelayedCalls()
-        t=time.time()
-        return min([x.getTime() - t for x in c if x.active()])
-
-    def doSomething(self):
+        endTime = delay + time.time()
         self._doSomethingCount += 1
-        self.timeout()
-        self.runUntilCurrent()
-        for i in self._readWriteQ:
-            log.callWithLogger(i[0], i[1])
-        _readWriteQ=[]
-        
-    
+        try:
+            while not self._callLaterCalled:
+                t = endTime - time.time()
+                if t <= 0.0: return               
+                aep.processEvents(QEventLoop.AllEvents, t*1010)
+                if len(self._readWriteQ) > 0: 
+                    for i in self._readWriteQ:
+                        log.callWithLogger(i[0], i[1])
+                        _readWriteQ=[]
+                    return
+        finally:
+            self._callLaterCalled=False
+            
     def iterate(self, delay=0.0):
         #print '********************* someone called iterate...'
         self.toxic_Reiterate(delay)
         
-    def doIteration(self,delay):
-        assert False, 'nobody should call doIteration'
-
 def install():
     """
     Configure the twisted mainloop to be run inside the qt mainloop.
