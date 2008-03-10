@@ -31,12 +31,21 @@ shouldn't be an issue.
 Included in this directory is a diff of trial's stdout between the
 default reactor and the Qt4 reactor.  The large time differences are
 due to hangage in some of the I/O tests unrelated to the performance
-of the reactor itself which is very good (to be quantified... I think
-its very good :-)
+of the reactor itself which is seems very good.
 
-# trial twisted $> /tmp/select.trial
-# trial --unclean-warnings --reactor=qt4 twisted &> /tmp/qt4.trial
+The diff is for the full test
+
+# trial --rterrors --unclean-warnings --reactor=qt4 twisted 2>&1 | tee /tmp/qt4trial.trial 
+
+# trial --rterrors --unclean-warnings twisted 2>&1 | tee /tmp/selecttrial.trial 
+
 # diff /tmp/select.trial /tmp/qt4.trial > trial.diff
+
+I don't have it here, but for a subset of the tests = twisted.test,
+the difference was a few percent.  Something about the full suite
+slowing things down.  I'm running profiles now but the tests I ran
+indicate a very zippy reactor... these differences are due to it being
+incorrect and causing hanging / spinning.
 
 -glenn
 

@@ -61,7 +61,7 @@ class TwistedSocketNotifier(QSocketNotifier):
 
     def read(self, sock):
         w = self.watcher
-        #self.setEnabled(False)                
+        #self.setEnabled(False)    # ??? do I need this?            
         def _read():
             why = None
             try:
@@ -99,32 +99,19 @@ class fakeApplication(QEventLoop):
         QEventLoop.__init__(self)
         
     def exec_(self):
-        #print 'entering exec_'
         QEventLoop.exec_(self)
         
-class signalCatcher(QObject):
-    def __init__(self):
-        QObject.__init__(self)
-        
-    def callLaterSignal(self):
-        self.emit(SIGNAL("twistedEvent"),'c')
-
 class QTReactor(PosixReactorBase):
     """
     Qt based reactor.
     """
     implements(IReactorFDSet)
 
-    # Reference to a DelayedCall for self.crash() when the reactor is
-    # entered through .iterate()
-    _crashCall = None
-
     _timer = None
 
     def __init__(self):
         self._reads = {}
         self._writes = {}
-        self._readWriteQ=[]
         self._timer=QTimer()
         self._timer.setSingleShot(True)
         if QCoreApplication.startingUp():
@@ -134,7 +121,7 @@ class QTReactor(PosixReactorBase):
             self.qApp = QCoreApplication.instance()
             self._ownApp=False
         self._blockApp = None
-        self._signalCatcher = signalCatcher()
+        self._readWriteQ=[]
         
         """ some debugging instrumentation """
         self._doSomethingCount=0
@@ -179,17 +166,14 @@ class QTReactor(PosixReactorBase):
     def callLater(self,howlong, *args, **kargs):
         rval = super(QTReactor,self).callLater(howlong, *args, **kargs)
         self.qApp.emit(SIGNAL("twistedEvent"),'c')
-        #self._signalCatcher.callLaterSignal()
         return rval
     
     def crash(self):
         super(QTReactor,self).crash()
         
     def cleanup(self):
-        #print 'cleanup'
         self.iterate(0.1) # cleanup pending events?
         self.running=False
-        #self.iterate() # cleanup pending events?
         self.qApp.emit(SIGNAL("twistedEvent"),'shutdown')
 
     def toxic_Reiterate(self,delay=0.0):
@@ -214,10 +198,6 @@ class QTReactor(PosixReactorBase):
     def runReturn(self, installSignalHandlers=True):
         QObject.connect(self.qApp,SIGNAL("twistedEvent"),
                         self.reactorInvocation)
-#===============================================================================
-#        QObject.connect(self._signalCatcher,SIGNAL("twistedEvent"),
-#                        self.reactorInvocation)
-#===============================================================================
         QObject.connect(self._timer, SIGNAL("timeout()"), 
                         self.reactorInvoke)
         self.startRunning(installSignalHandlers=installSignalHandlers)

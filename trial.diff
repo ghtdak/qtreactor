@@ -1,0 +1,375 @@
+156,160c156
+<     testVolatile ... 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< DelayedCalls: (set twisted.internet.base.DelayedCall.debug = True to debug)
+< <DelayedCall 35472016 [-0.00253915786743s] called=0 cancelled=0 Port.connectionLost(<twisted.python.failure.Failure <class 'twisted.internet.error.ConnectionDone'>>)>
+< <DelayedCall 35473528 [-0.002121925354s] called=0 cancelled=0 Client.doConnect()>
+---
+>     testVolatile ...                                                       [OK]
+304,307c300
+<     testDeferredYielding ... 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< DelayedCalls: (set twisted.internet.base.DelayedCall.debug = True to debug)
+< <DelayedCall 33970512 [-0.002436876297s] called=0 cancelled=0 Deferred.callback('hi')>
+---
+>     testDeferredYielding ...                                               [OK]
+511,522c504,506
+<     testEmptyLIST ... 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< DelayedCalls: (set twisted.internet.base.DelayedCall.debug = True to debug)
+< <DelayedCall 34000552 [-0.00204086303711s] called=0 cancelled=0 Port.connectionLost(<twisted.python.failure.Failure <class 'twisted.internet.error.ConnectionDone'>>)>
+<     testManyLargeDownloads ... 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< DelayedCalls: (set twisted.internet.base.DelayedCall.debug = True to debug)
+< <DelayedCall 33914464 [-0.00200510025024s] called=0 cancelled=0 Port.connectionLost(<twisted.python.failure.Failure <class 'twisted.internet.error.ConnectionDone'>>)>
+<     testTwoDirLIST ... 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< DelayedCalls: (set twisted.internet.base.DelayedCall.debug = True to debug)
+< <DelayedCall 33960952 [-0.00213694572449s] called=0 cancelled=0 Port.connectionLost(<twisted.python.failure.Failure <class 'twisted.internet.error.ConnectionDone'>>)>
+---
+>     testEmptyLIST ...                                                      [OK]
+>     testManyLargeDownloads ...                                             [OK]
+>     testTwoDirLIST ...                                                     [OK]
+529,537c513
+<     test_anonymousSTOR ... 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< DelayedCalls: (set twisted.internet.base.DelayedCall.debug = True to debug)
+< <DelayedCall 40518576 [599.9742589s] called=0 cancelled=0 FTP.__timedOut()>
+< 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< Selectables:
+< <<class 'twisted.internet.tcp.Port'> of twisted.protocols.ftp.DTPFactory on 51429>
+< <ProtocolWrapper #0 on 59620>
+---
+>     test_anonymousSTOR ...                                                 [OK]
+628,635c604
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_internet.py", line 1387, in testCorrectOrder
+<     self.assertEquals(o.stage, 3)
+< twisted.trial.unittest.FailTest: not equal:
+< a = 0
+< b = 3
+< 
+< [FAIL]
+---
+>                                                   [OK]
+638,645c607
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_internet.py", line 1395, in testNotRunAtOnce
+<     self.assertEquals(c.index, 1)
+< twisted.trial.unittest.FailTest: not equal:
+< a = 0
+< b = 1
+< 
+< [FAIL]
+---
+>                                                   [OK]
+648,655c610
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_internet.py", line 1377, in testScheduling
+<     self.assertEquals(c.index, 100)
+< twisted.trial.unittest.FailTest: not equal:
+< a = 0
+< b = 100
+< 
+< [FAIL]
+---
+>                                                     [OK]
+664,675c619
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_internet.py", line 1255, in testActive
+<     self.assertEquals(dcall.active(), 0)
+< twisted.trial.unittest.FailTest: not equal:
+< a = True
+< b = 0
+< 
+< [FAIL]
+< 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< DelayedCalls: (set twisted.internet.base.DelayedCall.debug = True to debug)
+< <DelayedCall 34221664 [-0.0541160106659s] called=0 cancelled=0 <lambda>()>
+---
+>                                                         [OK]
+745,750d688
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_internet.py", line 848, in testCallInNextIteration
+<     self.assertEquals(calls, ['f1'])
+< twisted.trial.unittest.FailTest: not equal:
+< a = []
+< b = ['f1']
+752c690
+< [FAIL]
+---
+> /usr/local/lib/python2.5/site-packages/twisted/test/test_internet.py:849: exceptions.DeprecationWarning: reactor.iterate cannot be used inside unit tests. By Twisted 2.7, using iterate will fail the test and may crash or hang the test run.
+754,756c692,693
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< DelayedCalls: (set twisted.internet.base.DelayedCall.debug = True to debug)
+< <DelayedCall 45664232 [-0.0569050312042s] called=0 cancelled=0 f1()>
+---
+> /usr/local/lib/python2.5/site-packages/twisted/test/test_internet.py:851: exceptions.DeprecationWarning: reactor.iterate cannot be used inside unit tests. By Twisted 2.7, using iterate will fail the test and may crash or hang the test run.
+>                                            [OK]
+761,773c698
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_internet.py", line 818, in testCallLaterDelayAndReset
+<     self.assertEquals(callbackTimes[0], 3)
+< twisted.trial.unittest.FailTest: not equal:
+< a = None
+< b = 3
+< 
+< [FAIL]
+< 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< DelayedCalls: (set twisted.internet.base.DelayedCall.debug = True to debug)
+< <DelayedCall 46242272 [-1.0s] called=0 cancelled=0 resetCallback()>
+< <DelayedCall 46242344 [0.0s] called=0 cancelled=0 delayCallback()>
+---
+>                                         [OK]
+780,787c705,706
+<     test_callLaterUsesReactorSecondsAsDelayedCallSecondsFactory ... 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< DelayedCalls: (set twisted.internet.base.DelayedCall.debug = True to debug)
+< <DelayedCall 45584256 [5s] called=0 cancelled=0 <lambda>()>
+<     test_callLaterUsesReactorSecondsInDelayedCall ... 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< DelayedCalls: (set twisted.internet.base.DelayedCall.debug = True to debug)
+< <DelayedCall 36476256 [5s] called=0 cancelled=0 <lambda>()>
+---
+>     test_callLaterUsesReactorSecondsAsDelayedCallSecondsFactory ...        [OK]
+>     test_callLaterUsesReactorSecondsInDelayedCall ...                      [OK]
+799,803c718
+<     testOutputWithErrorIgnored ... 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< DelayedCalls: (set twisted.internet.base.DelayedCall.debug = True to debug)
+< <DelayedCall 45606456 [-0.0133340358734s] called=0 cancelled=0 ProcessReader.connectionLost(<twisted.python.failure.Failure <class 'twisted.internet.error.ConnectionDone'>>)>
+< <DelayedCall 45606312 [-0.0114719867706s] called=0 cancelled=0 ProcessReader.connectionLost(<twisted.python.failure.Failure <class 'twisted.internet.error.ConnectionDone'>>)>
+---
+>     testOutputWithErrorIgnored ...                                         [OK]
+910,913c825
+<     test_pushProducer ... 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< DelayedCalls: (set twisted.internet.base.DelayedCall.debug = True to debug)
+< <DelayedCall 34000480 [-0.00534200668335s] called=0 cancelled=0 PushProducer._produceAndSchedule()>
+---
+>     test_pushProducer ...                                                  [OK]
+1436,1439d1347
+< 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< Selectables:
+< <Echo #0 on 38084>
+1650,1657c1558
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 346, in testOpenSSLBuffering
+<     self.assertEquals(client.buffer, ["+OK <some crap>\r\n"])
+< twisted.trial.unittest.FailTest: not equal:
+< a = []
+< b = ['+OK <some crap>\r\n']
+< 
+< [FAIL]
+---
+>                                               [OK]
+1666,1672c1567
+<     testUnTLS ... Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 269, in testUnTLS
+<     self._runTest(UnintelligentProtocol(), LineCollector(0, self.fillBuffer))
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 257, in _runTest
+<     "Never finished reading all lines: %s" % (inCharge.lines,))
+< exceptions.AttributeError: ServerFactory instance has no attribute 'lines'
+< [ERROR]
+---
+>     testUnTLS ...                                                          [OK]
+1678,1698c1573,1575
+<     testBackwardsTLS ... Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 278, in testBackwardsTLS
+<     self._runTest(LineCollector(1, self.fillBuffer), UnintelligentProtocol(), True)
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 257, in _runTest
+<     "Never finished reading all lines: %s" % (inCharge.lines,))
+< exceptions.AttributeError: ClientFactory instance has no attribute 'lines'
+< [ERROR]
+<     testTLS ... Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 261, in testTLS
+<     self._runTest(UnintelligentProtocol(), LineCollector(1, self.fillBuffer))
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 257, in _runTest
+<     "Never finished reading all lines: %s" % (inCharge.lines,))
+< exceptions.AttributeError: ServerFactory instance has no attribute 'lines'
+< [ERROR]
+<     testUnTLS ... Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 269, in testUnTLS
+<     self._runTest(UnintelligentProtocol(), LineCollector(0, self.fillBuffer))
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 257, in _runTest
+<     "Never finished reading all lines: %s" % (inCharge.lines,))
+< exceptions.AttributeError: ServerFactory instance has no attribute 'lines'
+< [ERROR]
+---
+>     testBackwardsTLS ...                                                   [OK]
+>     testTLS ...                                                            [OK]
+>     testUnTLS ...                                                          [OK]
+1717,1720c1594
+<     test_failedCertificateVerification ... 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< DelayedCalls: (set twisted.internet.base.DelayedCall.debug = True to debug)
+< <DelayedCall 60372824 [-0.0214071273804s] called=0 cancelled=0 Port.connectionLost(<twisted.python.failure.Failure <class 'twisted.internet.error.ConnectionDone'>>)>
+---
+>     test_failedCertificateVerification ...                                 [OK]
+1722,1725c1596
+<     test_refusedAnonymousClientConnection ... 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< DelayedCalls: (set twisted.internet.base.DelayedCall.debug = True to debug)
+< <DelayedCall 53186928 [-0.0219900608063s] called=0 cancelled=0 Port.connectionLost(<twisted.python.failure.Failure <class 'twisted.internet.error.ConnectionDone'>>)>
+---
+>     test_refusedAnonymousClientConnection ...                              [OK]
+2001,2004c1872
+<     test_cannotListen ... 
+< /usr/local/lib/python2.5/site-packages/twisted/trial/reporter.py:215: exceptions.UserWarning: Reactor was unclean.
+< DelayedCalls: (set twisted.internet.base.DelayedCall.debug = True to debug)
+< <DelayedCall 114973512 [-0.0261011123657s] called=0 cancelled=0 DatagramPort.connectionLost()>
+---
+>     test_cannotListen ...                                                  [OK]
+2263,2267c2131,2140
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 278, in testBackwardsTLS
+<     self._runTest(LineCollector(1, self.fillBuffer), UnintelligentProtocol(), True)
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 257, in _runTest
+<     "Never finished reading all lines: %s" % (inCharge.lines,))
+< exceptions.AttributeError: ClientFactory instance has no attribute 'lines'
+---
+>   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 281, in testBackwardsTLS
+>     UnintelligentProtocol.pretext + UnintelligentProtocol.posttext
+> twisted.trial.unittest.FailTest: not equal:
+> a = ['first line', 'last thing before tls starts', 'STARTTLS']
+> b = ['first line',
+>  'last thing before tls starts',
+>  'STARTTLS',
+>  'first thing after tls started',
+>  'last thing ever']
+> 
+2275,2279c2148,2157
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 261, in testTLS
+<     self._runTest(UnintelligentProtocol(), LineCollector(1, self.fillBuffer))
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 257, in _runTest
+<     "Never finished reading all lines: %s" % (inCharge.lines,))
+< exceptions.AttributeError: ServerFactory instance has no attribute 'lines'
+---
+>   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 264, in testTLS
+>     UnintelligentProtocol.pretext + UnintelligentProtocol.posttext
+> twisted.trial.unittest.FailTest: not equal:
+> a = ['first line', 'last thing before tls starts', 'STARTTLS']
+> b = ['first line',
+>  'last thing before tls starts',
+>  'STARTTLS',
+>  'first thing after tls started',
+>  'last thing ever']
+> 
+2290,2395d2167
+< [FAIL]: twisted.test.test_internet.CallFromThreadTestCase.testCorrectOrder
+< 
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_internet.py", line 1387, in testCorrectOrder
+<     self.assertEquals(o.stage, 3)
+< twisted.trial.unittest.FailTest: not equal:
+< a = 0
+< b = 3
+< 
+< ===============================================================================
+< [FAIL]: twisted.test.test_internet.CallFromThreadTestCase.testNotRunAtOnce
+< 
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_internet.py", line 1395, in testNotRunAtOnce
+<     self.assertEquals(c.index, 1)
+< twisted.trial.unittest.FailTest: not equal:
+< a = 0
+< b = 1
+< 
+< ===============================================================================
+< [FAIL]: twisted.test.test_internet.CallFromThreadTestCase.testScheduling
+< 
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_internet.py", line 1377, in testScheduling
+<     self.assertEquals(c.index, 100)
+< twisted.trial.unittest.FailTest: not equal:
+< a = 0
+< b = 100
+< 
+< ===============================================================================
+< [FAIL]: twisted.test.test_internet.DelayedTestCase.testActive
+< 
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_internet.py", line 1255, in testActive
+<     self.assertEquals(dcall.active(), 0)
+< twisted.trial.unittest.FailTest: not equal:
+< a = True
+< b = 0
+< 
+< ===============================================================================
+< [FAIL]: twisted.test.test_internet.TimeTestCase.testCallInNextIteration
+< 
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_internet.py", line 848, in testCallInNextIteration
+<     self.assertEquals(calls, ['f1'])
+< twisted.trial.unittest.FailTest: not equal:
+< a = []
+< b = ['f1']
+< 
+< ===============================================================================
+< [FAIL]: twisted.test.test_internet.TimeTestCase.testCallLaterDelayAndReset
+< 
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_internet.py", line 818, in testCallLaterDelayAndReset
+<     self.assertEquals(callbackTimes[0], 3)
+< twisted.trial.unittest.FailTest: not equal:
+< a = None
+< b = 3
+< 
+< ===============================================================================
+< [FAIL]: twisted.test.test_ssl.BufferingTestCase.testOpenSSLBuffering
+< 
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 346, in testOpenSSLBuffering
+<     self.assertEquals(client.buffer, ["+OK <some crap>\r\n"])
+< twisted.trial.unittest.FailTest: not equal:
+< a = []
+< b = ['+OK <some crap>\r\n']
+< 
+< ===============================================================================
+< [ERROR]: twisted.test.test_ssl.SpammyTLSTestCase.testUnTLS
+< 
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 269, in testUnTLS
+<     self._runTest(UnintelligentProtocol(), LineCollector(0, self.fillBuffer))
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 257, in _runTest
+<     "Never finished reading all lines: %s" % (inCharge.lines,))
+< exceptions.AttributeError: ServerFactory instance has no attribute 'lines'
+< ===============================================================================
+< [ERROR]: twisted.test.test_ssl.TLSTestCase.testBackwardsTLS
+< 
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 278, in testBackwardsTLS
+<     self._runTest(LineCollector(1, self.fillBuffer), UnintelligentProtocol(), True)
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 257, in _runTest
+<     "Never finished reading all lines: %s" % (inCharge.lines,))
+< exceptions.AttributeError: ClientFactory instance has no attribute 'lines'
+< ===============================================================================
+< [ERROR]: twisted.test.test_ssl.TLSTestCase.testTLS
+< 
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 261, in testTLS
+<     self._runTest(UnintelligentProtocol(), LineCollector(1, self.fillBuffer))
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 257, in _runTest
+<     "Never finished reading all lines: %s" % (inCharge.lines,))
+< exceptions.AttributeError: ServerFactory instance has no attribute 'lines'
+< ===============================================================================
+< [ERROR]: twisted.test.test_ssl.TLSTestCase.testUnTLS
+< 
+< Traceback (most recent call last):
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 269, in testUnTLS
+<     self._runTest(UnintelligentProtocol(), LineCollector(0, self.fillBuffer))
+<   File "/usr/local/lib/python2.5/site-packages/twisted/test/test_ssl.py", line 257, in _runTest
+<     "Never finished reading all lines: %s" % (inCharge.lines,))
+< exceptions.AttributeError: ServerFactory instance has no attribute 'lines'
+< ===============================================================================
+2411c2183
+< Ran 1474 tests in 235.924s
+---
+> Ran 1474 tests in 54.289s
+2413c2185
+< FAILED (skips=38, expectedFailures=6, failures=8, errors=5, successes=1405)
+---
+> FAILED (skips=38, expectedFailures=6, failures=1, errors=1, successes=1429)
