@@ -172,7 +172,7 @@ class QTReactor(PosixReactorBase):
         super(QTReactor,self).crash()
         
     def cleanup(self):
-        self.iterate(0.1) # cleanup pending events?
+        #self.iterate(0.1) # cleanup pending events?
         self.running=False
         self.qApp.emit(SIGNAL("twistedEvent"),'shutdown')
 
@@ -194,9 +194,11 @@ class QTReactor(PosixReactorBase):
         QObject.connect(self.qApp,SIGNAL("twistedEvent"),
                         self.reactorInvocation)
         QObject.connect(self._timer, SIGNAL("timeout()"), 
-                        self.reactorInvoke)
+                        self.reactorInvokePrivate)
         self.startRunning(installSignalHandlers=installSignalHandlers)
         self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
+        self.addSystemEventTrigger('before', 'shutdown', 
+                                   self.reactorInvocation)
         self.qApp.emit(SIGNAL("twistedEvent"),'startup')
         QTimer.singleShot(101,self.slowPoll)
         self._timer.start(0)
@@ -220,10 +222,11 @@ class QTReactor(PosixReactorBase):
     def reactorInvocation(self):
         self._timer.setInterval(0)
         
-    def reactorInvoke(self):
+    def reactorInvokePrivate(self):
         self._doSomethingCount += 1
         if self.running:
             self.runUntilCurrent()
+            self.qApp.processEvents() # hmmmm
             t2 = self.timeout()
             t = self.running and t2
             if t is None: t=1.0
