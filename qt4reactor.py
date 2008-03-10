@@ -30,7 +30,7 @@ import sys, time
 from zope.interface import implements
 
 from PyQt4.QtCore import QSocketNotifier, QObject, SIGNAL, QTimer, QCoreApplication
-from PyQt4.QtCore import QEventLoop, QAbstractEventDispatcher
+from PyQt4.QtCore import QEventLoop
 
 from twisted.internet.interfaces import IReactorFDSet
 from twisted.python import log
@@ -176,19 +176,14 @@ class QTReactor(PosixReactorBase):
         self.running=False
         self.qApp.emit(SIGNAL("twistedEvent"),'shutdown')
 
-    def toxic_Reiterate(self,delay=0.0):
-        """
-        WARNING: this re-entrant iterate CAN AND WILL
-        have dire and unintended consequences for all those
-        who attempt usage without the proper clearances.
-        """
-        app=QCoreApplication.instance()
+    def iterate(self,delay=0.0):
         endTime = delay + time.time()
-        app.processEvents() # gotta do at least one
+        self._timer.start(0) # locked?
+        self.qApp.processEvents() # gotta do at least one
         while True:
             t = endTime - time.time()
             if t <= 0.0: return
-            app.processEvents(QEventLoop.AllEvents | 
+            self.qApp.processEvents(QEventLoop.AllEvents | 
                               QEventLoop.WaitForMoreEvents,t*1010)
             
     def addReadWrite(self,t):
@@ -233,22 +228,13 @@ class QTReactor(PosixReactorBase):
             t = self.running and t2
             if t is None: t=1.0
             self._timer.start(t*1010)
-            self.doIteration(99999)
         else:
             if self._blockApp is not None:
                 self._blockApp.quit()
                 
-    def doReactorEvent(self,delay):
-        for i in self._readWriteQ:
-            log.callWithLogger(i[0], i[1])
-        _readWriteQ=[]
+    def doIteration(self):
+        assert False, "doiteration is invalid call"
             
-    doIteration = doReactorEvent
-            
-    def iterate(self, delay=0.0):
-        #print '********************* someone called iterate...'
-        self.toxic_Reiterate(delay)
-        
 def install():
     """
     Configure the twisted mainloop to be run inside the qt mainloop.
