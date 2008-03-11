@@ -172,8 +172,9 @@ class QTReactor(PosixReactorBase):
         super(QTReactor,self).crash()
         
     def cleanup(self):
-        self._timer.stop()
-        self._blockApp.quit()
+        log.msg("cleanup called")
+        #self._timer.stop()
+        #self._blockApp.quit()
 
     def iterate(self,delay=0.0):
         endTime = delay + time.time()
@@ -188,7 +189,7 @@ class QTReactor(PosixReactorBase):
             
     def addReadWrite(self,t):
         self._readWriteQ.append(t)
-        self.qApp.emit(SIGNAL("twistedEvent"),'fileIO')
+        #self.qApp.emit(SIGNAL("twistedEvent"),'fileIO')
         
     def runReturn(self, installSignalHandlers=True):
         QObject.connect(self.qApp,SIGNAL("twistedEvent"),
@@ -197,8 +198,8 @@ class QTReactor(PosixReactorBase):
                         self.reactorInvokePrivate)
         self.startRunning(installSignalHandlers=installSignalHandlers)
         self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
-        self.addSystemEventTrigger('before', 'shutdown', 
-                                   self.reactorInvocation)
+        #self.addSystemEventTrigger('before', 'shutdown', 
+        #                           self.reactorInvocation)
         self._timer.start(0)
         
     def run(self, installSignalHandlers=True):
@@ -210,22 +211,21 @@ class QTReactor(PosixReactorBase):
             self.runReturn(installSignalHandlers)
             self._blockApp.exec_()
         finally:
-            self._blockApp=None
+            self._timer.stop() # should already be stopped
 
     def reactorInvocation(self):
         self._timer.setInterval(0)
         
     def reactorInvokePrivate(self):
+        if not self.running:
+            self._blockApp.quit()
         self._doSomethingCount += 1
-        if self.running:
-            self.runUntilCurrent()
-            t = self.timeout()
-            if not self.running:
-                self.qApp.processEvents()
-                return
-            elif t is None: t=0.1
-            else: t = min(t,0.1)
-            self._timer.start(t*1010)
+        self.runUntilCurrent()
+        self.qApp.processEvents()
+        t = self.timeout()
+        if t is None: t=0.1
+        else: t = min(t,0.1)
+        self._timer.start(t*1010)
                 
     def doIteration(self):
         assert False, "doiteration is invalid call"
