@@ -172,9 +172,6 @@ class QTReactor(PosixReactorBase):
         super(QTReactor,self).crash()
         
     def iterate(self,delay=0.0):
-        #if not self._timer.isActive():
-        #self._timer.start(0) # locked?
-        #self.qApp.processEvents() # gotta do at least one
         t=self.running # not sure I entirely get the state of running
         self.running=True
         try:
