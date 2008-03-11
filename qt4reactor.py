@@ -172,19 +172,30 @@ class QTReactor(PosixReactorBase):
         super(QTReactor,self).crash()
         
     def iterate(self,delay=0.0):
-        endTime = delay + time.time()
-        if not self._timer.isActive():
-            self._timer.start(0) # locked?
-        self.qApp.processEvents() # gotta do at least one
-        while True:
-            t = endTime - time.time()
-            if t <= 0.0: return
-            self.qApp.processEvents(QEventLoop.AllEvents | 
-                              QEventLoop.WaitForMoreEvents,t*1010)
+        #if not self._timer.isActive():
+        #self._timer.start(0) # locked?
+        #self.qApp.processEvents() # gotta do at least one
+        t=self.running # not sure I entirely get the state of running
+        self.running=True
+        try:
+            if delay == 0.0:
+                self.reactorInvokePrivate()
+                self._timer.stop()
+                self.qApp.processEvents()
+                self._timer.start()
+            else:
+                endTime = delay + time.time()
+                self.reactorInvokePrivate()
+                while True:
+                    t = endTime - time.time()
+                    if t <= 0.0: return
+                    self.qApp.processEvents(QEventLoop.AllEvents | 
+                                      QEventLoop.WaitForMoreEvents,t*1010)
+        finally:
+            self.running=t
             
     def addReadWrite(self,t):
         self._readWriteQ.append(t)
-        #self.qApp.emit(SIGNAL("twistedEvent"),'fileIO')
         
     def runReturn(self, installSignalHandlers=True):
         QObject.connect(self.qApp,SIGNAL("twistedEvent"),
@@ -213,7 +224,7 @@ class QTReactor(PosixReactorBase):
             self._blockApp.quit()
         self._doSomethingCount += 1
         self.runUntilCurrent()
-        self.qApp.processEvents()
+        #self.qApp.processEvents()
         t = self.timeout()
         if t is None: t=0.1
         else: t = min(t,0.1)
