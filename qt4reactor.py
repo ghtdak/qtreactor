@@ -224,6 +224,7 @@ class QTReactor(PosixReactorBase):
                 self.qApp.processEvents()
                 return
             elif t is None: t=0.1
+            else: t = min(t,0.1)
             self._timer.start(t*1010)
                 
     def doIteration(self):
