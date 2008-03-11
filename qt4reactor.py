@@ -172,13 +172,13 @@ class QTReactor(PosixReactorBase):
         super(QTReactor,self).crash()
         
     def cleanup(self):
-        #self.iterate(0.1) # cleanup pending events?
-        self.running=False
-        self.qApp.emit(SIGNAL("twistedEvent"),'shutdown')
+        self._timer.stop()
+        self._blockApp.quit()
 
     def iterate(self,delay=0.0):
         endTime = delay + time.time()
-        self._timer.start(0) # locked?
+        if not self._timer.isActive():
+            self._timer.start(0) # locked?
         self.qApp.processEvents() # gotta do at least one
         while True:
             t = endTime - time.time()
@@ -199,8 +199,6 @@ class QTReactor(PosixReactorBase):
         self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
         self.addSystemEventTrigger('before', 'shutdown', 
                                    self.reactorInvocation)
-        self.qApp.emit(SIGNAL("twistedEvent"),'startup')
-        QTimer.singleShot(101,self.slowPoll)
         self._timer.start(0)
         
     def run(self, installSignalHandlers=True):
@@ -214,11 +212,6 @@ class QTReactor(PosixReactorBase):
         finally:
             self._blockApp=None
 
-    def slowPoll(self):
-        self.qApp.emit(SIGNAL("twistedEvent"),'slowpoll')
-        if self.running:
-            QTimer.singleShot(101,self.slowPoll)
-    
     def reactorInvocation(self):
         self._timer.setInterval(0)
         
@@ -226,14 +219,12 @@ class QTReactor(PosixReactorBase):
         self._doSomethingCount += 1
         if self.running:
             self.runUntilCurrent()
-            self.qApp.processEvents() # hmmmm
-            t2 = self.timeout()
-            t = self.running and t2
-            if t is None: t=1.0
+            t = self.timeout()
+            if not self.running:
+                self.qApp.processEvents()
+                return
+            elif t is None: t=0.1
             self._timer.start(t*1010)
-        else:
-            if self._blockApp is not None:
-                self._blockApp.quit()
                 
     def doIteration(self):
         assert False, "doiteration is invalid call"
