@@ -171,11 +171,6 @@ class QTReactor(PosixReactorBase):
     def crash(self):
         super(QTReactor,self).crash()
         
-    def cleanup(self):
-        log.msg("cleanup called")
-        #self._timer.stop()
-        #self._blockApp.quit()
-
     def iterate(self,delay=0.0):
         endTime = delay + time.time()
         if not self._timer.isActive():
@@ -197,9 +192,6 @@ class QTReactor(PosixReactorBase):
         QObject.connect(self._timer, SIGNAL("timeout()"), 
                         self.reactorInvokePrivate)
         self.startRunning(installSignalHandlers=installSignalHandlers)
-        self.addSystemEventTrigger('after', 'shutdown', self.cleanup)
-        #self.addSystemEventTrigger('before', 'shutdown', 
-        #                           self.reactorInvocation)
         self._timer.start(0)
         
     def run(self, installSignalHandlers=True):
