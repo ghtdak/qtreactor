@@ -178,8 +178,8 @@ class QTReactor(PosixReactorBase):
             if delay == 0.0:
                 self.reactorInvokePrivate()
                 self._timer.stop()
-                self.qApp.processEvents()
-                self._timer.start()
+                #self.qApp.processEvents()
+                #self._timer.start()
             else:
                 endTime = delay + time.time()
                 self.reactorInvokePrivate()
@@ -221,10 +221,10 @@ class QTReactor(PosixReactorBase):
             self._blockApp.quit()
         self._doSomethingCount += 1
         self.runUntilCurrent()
-        #self.qApp.processEvents()
         t = self.timeout()
         if t is None: t=0.1
         else: t = min(t,0.1)
+        self.qApp.processEvents()
         self._timer.start(t*1010)
                 
     def doIteration(self):
