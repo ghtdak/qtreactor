@@ -75,7 +75,7 @@ class TwistedSocketNotifier(QSocketNotifier):
                 pass
                 #self.setEnabled(True)
         log.callWithLogger(w, _read)
-        self.reactor.qApp.emit(SIGNAL("twistedEvent"),'c')
+        self.reactor.reactorInvocation()
 
     def write(self, sock):
         w = self.watcher
@@ -92,7 +92,7 @@ class TwistedSocketNotifier(QSocketNotifier):
             elif self.watcher:
                 self.setEnabled(True)
         log.callWithLogger(w, _write)
-        self.reactor.qApp.emit(SIGNAL("twistedEvent"),'c')
+        self.reactor.reactorInvocation()
 
 class fakeApplication(QEventLoop):
     def __init__(self):
@@ -165,7 +165,7 @@ class QTReactor(PosixReactorBase):
     
     def callLater(self,howlong, *args, **kargs):
         rval = super(QTReactor,self).callLater(howlong, *args, **kargs)
-        self.qApp.emit(SIGNAL("twistedEvent"),'c')
+        self.reactorInvocation()
         return rval
     
     def crash(self):
@@ -194,8 +194,6 @@ class QTReactor(PosixReactorBase):
         self._readWriteQ.append(t)
         
     def runReturn(self, installSignalHandlers=True):
-        QObject.connect(self.qApp,SIGNAL("twistedEvent"),
-                        self.reactorInvocation)
         QObject.connect(self._timer, SIGNAL("timeout()"), 
                         self.reactorInvokePrivate)
         self.startRunning(installSignalHandlers=installSignalHandlers)
