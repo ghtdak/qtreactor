@@ -224,8 +224,9 @@ class QTReactor(PosixReactorBase):
         t = self.timeout()
         if t is None: t=0.1
         else: t = min(t,0.1)
-        self.qApp.processEvents()
-        self._timer.start(t*1010)
+        self._timer.setInterval(t*1010)
+        self.qApp.processEvents() # could change interval
+        self._timer.start()
                 
     def doIteration(self):
         assert False, "doiteration is invalid call"
