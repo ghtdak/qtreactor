@@ -31,18 +31,6 @@ shouldn't be an issue.
 Included in this directory is a diff of trial's stdout between the
 default reactor and the Qt4 reactor.  
 
-The diff is for the full test
-
-# trial --reactor=qt4 twisted 2>&1 | tee /tmp/qt4trial.trial 
-# trial twisted 2>&1 | tee /tmp/selecttrial.trial 
-# diff /tmp/select.trial /tmp/qt4.trial > qtvSelect.diff
-
-There are significant differences in time for the full suite of tests.
-Not entirely sure why yet... the profiler seems unhappy with the mail
-suite and getting avatar info... but the numbers don't really add up.
-
-If anyone has any insights...
-
 -glenn
 
 --
