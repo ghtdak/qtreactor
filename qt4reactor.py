@@ -174,12 +174,11 @@ class QTReactor(PosixReactorBase):
     def iterate(self,delay=0.0):
         t=self.running # not sure I entirely get the state of running
         self.running=True
+        self._timer.stop() # in case its not (rare?)
         try:
             if delay == 0.0:
                 self.reactorInvokePrivate()
-                self._timer.stop()
-                #self.qApp.processEvents()
-                #self._timer.start()
+                self._timer.stop() # supports multiple invocations
             else:
                 endTime = delay + time.time()
                 self.reactorInvokePrivate()
