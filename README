@@ -28,8 +28,9 @@ QCoreApplication yourself...
 However, most users want this reactor to do gui stuff so this
 shouldn't be an issue.
 
-Included in this directory is a diff of trial's stdout between the
-default reactor and the Qt4 reactor.  
+Performance impact of Qt has been reduced by minimizing use of
+signaling which is expensive.  241s for qt4reactor vs 194s for select
+for entire twisted trial suite.
 
 -glenn
 
