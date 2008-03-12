@@ -1,13 +1,12 @@
-As I learned Qt, I finally understood how they want you to do things,
-so this is prettty much a complete rewrite from previous versions in
-the thread of development.
+Unpack this directory into your PYTHONPATH.  Install with:
 
-Everything is pretty much done with signals now.  In addition, if
-you're writing a conventional Qt application and just want twisted as
-an addon, you can get that by calling reactor.runReturn() instead of
-run().  Run blocks, but blocks artifically.  Stoppping and rerunning
-the reactor seems to work fine... Qt is the event engine that drives
-it all regardless.
+app = QApplication(sys.argv)
+import qt4reactor
+qt4reactor.install()
+
+test with:
+
+trial --reactor=qt4 twisted (or twisted.test or twisted.test.test_internet)
 
 There is a way to run trial using a gui... in bin, there is a routine
 gtrial.  Put that in the same directory as trial and it pops up a
@@ -16,8 +15,15 @@ trivial gui... hit the buton and it all runs the same... don't use the
 appear to work.  This was just to make sure there wasn't anything
 strange with guis which there doesn't appear to be
 
-using twisted's trial also works... make sure the qtreactor directory
-is in your PYHONPATH and just use the --reactor=qt4 option
+If you're writing a conventional Qt application and just want twisted
+as an addon, you can get that by calling reactor.runReturn() instead
+of run().  This call needs to occur after your installation of of the
+reactor and after QApplication.exec_() (or QCoreApplication.exec_()
+whichever you are using.
+
+reactor.run() will also work as expected in a typical twisted application
+
+more docs in qt4reactor.py
 
 Note that if a QApplication or QCoreApplication instance isn't
 constructed prior to calling reactor run, an internally owned
