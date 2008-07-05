@@ -157,9 +157,10 @@ class QTReactor(PosixReactorBase):
 
     def removeReader(self, reader):
         if reader in self._reads:
-            self._reads[reader].shutdown()
+            #self._reads[reader].shutdown()
             #del self._reads[reader]
-            self._reads.pop(reader)
+            t = self._reads.pop(reader)
+            t.shutdown()
 
 
     def removeWriter(self, writer):
