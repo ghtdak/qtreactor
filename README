@@ -1,12 +1,25 @@
-Unpack this directory into your PYTHONPATH.  Install with:
+Unpack this directory into your PYTHONPATH.
+
+test with:
+
+trial --reactor=qt4 twisted (or twisted.test or twisted.test.test_internet)
+
+If you're using Qt 4.4 and the newer versions of twisted, I've been using:
+
+trial --reactor=qt4 --without-module gtk2reactor --recursionlimit=2000
+twisted 2>&1 | tee trial.out
+
+particularly on a 64 bit OS... I have no idea why the recursion limit matters more on 64 bit machines... maybe there's deeper to go so it does :-)
+
+= Using the Qt4Reactor =
+
+In your own code, BEFORE you import the reactor...
 
 app = QApplication(sys.argv)
 import qt4reactor
 qt4reactor.install()
 
-test with:
-
-trial --reactor=qt4 twisted (or twisted.test or twisted.test.test_internet)
+= Gui =
 
 There is a way to run trial using a gui... in bin, there is a routine
 gtrial.  Put that in the same directory as trial and it pops up a
