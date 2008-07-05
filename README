@@ -11,6 +11,10 @@ twisted 2>&1 | tee trial.out
 
 particularly on a 64 bit OS... I have no idea why the recursion limit matters more on 64 bit machines... maybe there's deeper to go so it does :-)
 
+= Contributors = 
+
+Many thanks to Darren Dale who provided the patch to fix the reactor for Qt4.4
+
 = Using the Qt4Reactor =
 
 In your own code, BEFORE you import the reactor...
