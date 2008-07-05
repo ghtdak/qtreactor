@@ -71,6 +71,7 @@ class TwistedSocketNotifier(QSocketNotifier):
         QObject.disconnect(self, SIGNAL("activated(int)"), self.fn)
         self.setEnabled(False)
         self.fn = self.watcher = None
+        self.deleteLater()
 
 
     def read(self, sock):
@@ -157,13 +158,15 @@ class QTReactor(PosixReactorBase):
     def removeReader(self, reader):
         if reader in self._reads:
             self._reads[reader].shutdown()
-            del self._reads[reader]
+            #del self._reads[reader]
+            self._reads.pop(reader)
 
 
     def removeWriter(self, writer):
         if writer in self._writes:
             self._writes[writer].shutdown()
-            del self._writes[writer]
+            #del self._writes[writer]
+            self._writes.pop(writer)
 
 
     def removeAll(self):
