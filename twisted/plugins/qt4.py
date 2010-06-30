@@ -1,5 +1,5 @@
-# Copyright (c) 2001-2007 Twisted Matrix Laboratories.
-# This file is licensed under GPLv2
+# Copyright (c) 2001-2010 Twisted Matrix Laboratories.
+# see LICENSE for details
 
 
 from twisted.application.reactors import Reactor
