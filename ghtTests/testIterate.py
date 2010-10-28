@@ -1,10 +1,10 @@
 import sys
-from PyQt4 import QtGui, QtScript
-from PyQt4.QtCore import QTimer, SIGNAL
+from PySide import QtGui, QtScript
+from PySide.QtCore import QTimer, SIGNAL
 import qt4reactor
 
 app = QtGui.QApplication(sys.argv)
-qt4reactor.install(app)
+qt4reactor.install()
 
 from twisted.internet import reactor, task
 from twisted.python import log

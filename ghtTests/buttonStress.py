@@ -1,6 +1,6 @@
 import sys
-from PyQt4 import QtGui, QtScript
-from PyQt4.QtCore import QTimer, SIGNAL, QObject
+from PySide import QtGui, QtScript
+from PySide.QtCore import QTimer, SIGNAL, QObject
 import qt4reactor
 
 app = QtGui.QApplication(sys.argv)

@@ -1,7 +1,9 @@
 import sys
 
 from twisted.application import reactors
-reactors.installReactor('qt4')
+import qt4reactor
+qt4reactor.install()
+#reactors.installReactor('qt4')
 
 from twisted.internet import reactor, task
 from twisted.python import log
