@@ -14,13 +14,15 @@ import time, sys
 class IRCCore(irc.IRCClient):
     nickname = 'dosdsdssd'
     def connectionMade(self):
-        self.nickname = self.factory.nickname
+        self.nickname = self.factory.window.nickName.text().encode('ascii')
+        self.factory.window.protocol = self
         irc.IRCClient.connectionMade(self)
         self.log('connected!!')
     def connectionLost(self, reason):
         self.log('disconnected... :( %s'%reason)
     def signedOn(self):
-        self.join(self.factory.channel)
+        chanName = self.factory.window.channelName.text().encode('ascii')
+        self.join(chanName)
     def joined(self, channel):
         self.log('joined %s'%channel)
     def privmsg(self, user, channel, msg):
@@ -28,14 +30,12 @@ class IRCCore(irc.IRCClient):
     def action(self, user, channel, msg):
         self.log('action: %s %s %s'%(user, channel, msg))
     def log(self, str):
-        self.factory.view.addItem(str)
+        self.factory.window.view.addItem(str)
 
 class IRCCoreFactory(protocol.ClientFactory):
     protocol = IRCCore
-    def __init__(self, channel, nickname, view):
-        self.channel = channel
-        self.nickname = nickname
-        self.view = view
+    def __init__(self, window):
+        self.window = window
     def clientConnectionLost(self, connector, reason):
         # reconnect to server if lose connection
         connector.connect()
@@ -73,16 +73,29 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('IRC')
         self.setUnifiedTitleAndToolBarOnMac(True)
         self.showMaximized()
+
+        self.protocol = None
     def connectIRC(self):
         self.connectButton.setDisabled(True)
-        chanName = self.channelName.text().encode('ascii')
-        nickName = self.nickName.text().encode('ascii')
-        ircCoreFactory = IRCCoreFactory(chanName, nickName, self.view)
+        self.channelName.setDisabled(True)
+        self.nickName.setDisabled(True)
+        self.serverName.setDisabled(True)
+        ircCoreFactory = IRCCoreFactory(self)
         serverName = self.serverName.text().encode('ascii')
         reactor.connectTCP(serverName, 6667, ircCoreFactory)
-        #reactor.run()
+        #reactor.runReturn()
+        #app.exit()
+        #app.exit()
+        reactor.run()
     def sendMessage(self):
-        print(self.entry.text())
+        if self.protocol:
+            chanName = self.channelName.text().encode('ascii')
+            message = self.entry.text().encode('ascii')
+            self.protocol.msg(chanName, message)
+            self.view.addItem('%s <%s> %s'%(chanName, self.protocol.nickname, message))
+        else:
+            self.view.addItem('Not connected.')
+        self.entry.setText('')
     def closeEvent(self, event):
         print('Attempting to close the main window!')
         reactor.stop()
@@ -90,5 +103,4 @@ class MainWindow(QMainWindow):
 
 if __name__ == '__main__':
     mainWin = MainWindow()
-    reactor.runReturn()
     sys.exit(app.exec_())
