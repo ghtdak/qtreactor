@@ -4,13 +4,6 @@ test with:
 
 trial --reactor=qt4 twisted (or twisted.test or twisted.test.test_internet)
 
-If you're using Qt 4.4 and the newer versions of twisted, I've been using:
-
-trial --reactor=qt4 --without-module gtk2reactor --recursionlimit=2000
-twisted 2>&1 | tee trial.out
-
-particularly on a 64 bit OS... I have no idea why the recursion limit matters more on 64 bit machines... maybe there's deeper to go so it does :-)
-
 = Contributors = 
 
 Many thanks to Darren Dale who provided the patch to fix the reactor for Qt4.4
@@ -52,7 +45,7 @@ However, most users want this reactor to do gui stuff so this
 shouldn't be an issue.
 
 Performance impact of Qt has been reduced by minimizing use of
-signaling which is expensive.  241s for qt4reactor vs 194s for select
+signaling which is expensive.  186s for qt4reactor vs 180s for select
 for entire twisted trial suite.
 
 -glenn
