@@ -135,7 +135,7 @@ class QtReactor(posixbase.PosixReactorBase):
         self._timer.setSingleShot(True)
         QObject.connect(self._timer, SIGNAL("timeout()"), self.iterate)
 
-        if QCoreApplication.startingUp():
+        if QCoreApplication.instance() is None:
             # Application Object has not been started yet
             self.qApp=QCoreApplication([])
             self._ownApp=True
