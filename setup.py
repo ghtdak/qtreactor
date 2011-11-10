@@ -24,5 +24,4 @@ setup(
     url='https://github.com/ghtdak/qtreactor',
     scripts=glob("./bin/*"),
     py_modules=['qt4reactor', 'gtrial'],
-    data_files=['README', 'LICENSE'],
 )

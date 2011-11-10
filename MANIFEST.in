@@ -1,2 +1,4 @@
+include README
+include LICENSE
 recursive-include ghtTests *
 recursive-include twisted *
