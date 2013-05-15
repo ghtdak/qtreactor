@@ -7,3 +7,6 @@
 .pydevproject
 *.cache
 _trial_temp
+MANIFEST
+dist/
+build/
