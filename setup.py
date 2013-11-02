@@ -7,7 +7,7 @@
 from distutils.core import setup
 from glob import glob
 
-classifiers=[
+classifiers = [
     'Development Status :: 5 - Production/Stable',
     'Environment :: X11 Applications :: Qt',
     'Framework :: Twisted',
