@@ -1,55 +1,62 @@
+from __future__ import print_function
 import sys
-from PySide import QtGui, QtScript
-from PySide.QtCore import QTimer, SIGNAL, QObject
-import qt4reactor
+
+import PyQt4 as Qt
+import PyQt4.QtGui as QtGui
 
 app = QtGui.QApplication(sys.argv)
-qt4reactor.install()
+
+from twisted.application import reactors
+reactors.installReactor('qt4')
 
 from twisted.internet import reactor, task
 from twisted.python import log
+
 log.startLogging(sys.stdout)
 
-class doNothing(QObject):
+
+class DoNothing(Qt.QtCore.QObject):
     def __init__(self):
         self.count = 0
-        self.looping=False
-        task.LoopingCall(self.printStat).start(1.0)
-        QObject.__init__(self)
-        
-    def doSomething(self):
-        if not self.looping: return
+        self.looping = False
+        task.LoopingCall(self.print_stat).start(1.0)
+        Qt.QtCore.QObject.__init__(self)
+
+    def do_something(self):
+        if not self.looping:
+            return
+
         self.count += 1
-        reactor.callLater(0.003,self.doSomething)
-        
-    def buttonClick(self):
-        if self.looping: 
-            self.looping=False
+        reactor.callLater(0.003, self.do_something)
+
+    def button_click(self):
+        if self.looping:
+            self.looping = False
             log.msg('looping stopped....')
-        else: 
-            self.looping=True
-            self.doSomething()
+        else:
+            self.looping = True
+            self.do_something()
             log.msg('looping started....')
-        
-    def printStat(self):
-        log.msg(' c: ' + str(self.count) + 
-                ' st: ' + str(reactor._doSomethingCount))
+
+    def print_stat(self):
+        log.msg(' c: ' + str(self.count))
 
 
-t=doNothing()
+t = DoNothing()
 
-engine = QtScript.QScriptEngine()
+engine = Qt.QtScript.QScriptEngine()
 
-button = QtGui.QPushButton()
+button = Qt.QtGui.QPushButton()
 scriptButton = engine.newQObject(button)
 engine.globalObject().setProperty("button", scriptButton)
 
-app.connect(button, SIGNAL("clicked()"), t.buttonClick)
+app.connect(button, Qt.QtCore.SIGNAL("clicked()"), t.button_click)
 
 engine.evaluate("button.text = 'Hello World!'")
 engine.evaluate("button.styleSheet = 'font-style: italic'")
 engine.evaluate("button.show()")
 
+# noinspection PyUnresolvedReferences
 reactor.runReturn()
 app.exec_()
 log.msg('fell off the bottom?...')

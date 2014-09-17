@@ -1,9 +1,8 @@
 # Copyright (c) 2001-2011 Twisted Matrix Laboratories.
 # See LICENSE for details.
 """
-See main docstring in module __init__.py
 
-Reactor supporting PyQt4
+Reactor for PySide
 
 API Stability: stable
 
@@ -19,12 +18,13 @@ from twisted.internet.interfaces import IReactorFDSet
 from twisted.python import log, runtime
 from twisted.internet import posixbase
 
-# noinspection PyUnresolvedReferences
-import PyQt4.QtScript as QtScript
-# noinspection PyUnresolvedReferences
-import PyQt4.QtGui as QtGui
 
-import PyQt4.QtCore as QtCore
+# noinspection PyUnresolvedReferences
+import PySide.QtScript as QtScript
+# noinspection PyUnresolvedReferences
+import PySide.QtGui as QtGui
+# noinspection PyUnresolvedReferences
+import PySide.QtCore as QtCore
 
 
 # noinspection PyBroadException

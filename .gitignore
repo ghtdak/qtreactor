@@ -10,3 +10,4 @@ _trial_temp
 MANIFEST
 dist/
 build/
+.idea

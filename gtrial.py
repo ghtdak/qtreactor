@@ -1,21 +1,24 @@
+from __future__ import print_function
+
 import sys
-from PyQt4 import QtGui, QtScript
-from PyQt4.QtCore import QTimer, SIGNAL, QEventLoop
-import qt4reactor
+
+import PyQt4.QtGui as QtGui
+import PyQt4.QtScript as QtScript
+from PyQt4.QtCore import SIGNAL
 
 app = QtGui.QApplication(sys.argv)
 
+import qt4reactor
+
 qt4reactor.install()
 
-from twisted.internet import reactor, task
 
-
-class doNothing(object):
+class DoNothing(object):
     def __init__(self):
         self.count = 0
         self.running = False
 
-    def buttonClick(self):
+    def button_click(self):
         if not self.running:
             from twisted.scripts import trial
             trial.run()
@@ -23,19 +26,19 @@ class doNothing(object):
 
 def run():
 
-    t = doNothing()
+    t = DoNothing()
 
     engine = QtScript.QScriptEngine()
 
     button = QtGui.QPushButton()
-    scriptButton = engine.newQObject(button)
-    engine.globalObject().setProperty("button", scriptButton)
+    button = engine.newQObject(button)
+    engine.globalObject().setProperty("button", button)
 
-    app.connect(button, SIGNAL("clicked()"), t.buttonClick)
+    app.connect(button, SIGNAL("clicked()"), t.button_click)
 
     engine.evaluate("button.text = 'Do Twisted Gui Trial'")
     engine.evaluate("button.styleSheet = 'font-style: italic'")
     engine.evaluate("button.show()")
 
     app.exec_()
-    print 'fell off the bottom?...'
+    print('fell off the bottom?...')

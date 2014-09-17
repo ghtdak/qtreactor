@@ -29,5 +29,5 @@ setup(
                      'Qt mainloop.',
     url='https://github.com/ghtdak/qtreactor',
     scripts=glob("./bin/*"),
-    py_modules=['qt4reactor', 'gtrial'],
+    py_modules=['qt4reactor', 'gtrial', 'pysidereactor'], requires=['twisted']
 )

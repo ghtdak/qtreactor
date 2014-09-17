@@ -1,37 +1,43 @@
+from __future__ import print_function
+
 import sys
-from PySide import QtGui, QtScript
-from PySide.QtCore import QTimer, SIGNAL, QEventLoop
-import qt4reactor
-        
+
+from PyQt4 import QtGui, QtScript
+from PyQt4 import QtCore
+
 app = QtGui.QApplication(sys.argv)
+
+import qt4reactor
 
 qt4reactor.install()
 
 from twisted.internet import reactor, task
 
-class doNothing(object):
+
+class DoNothing(object):
     def __init__(self):
         self.count = 0
-        self.running=False
-        task.LoopingCall(self.printStat).start(1.0)
+        self.running = False
+        task.LoopingCall(self.print_stat).start(1.0)
 
-        
-    def buttonClick(self):
+    def button_click(self):
         if self.running:
-            self.running=False
-            print 'CLICK: calling reactor stop...'
+            self.running = False
+            print('CLICK: calling reactor stop...')
             reactor.stop()
-            print 'reactor stop called....'
+            print('reactor stop called....')
         else:
-            self.running=True
-            print 'CLICK: entering run'
+            self.running = True
+            print('CLICK: entering run')
             reactor.run()
-            print 'reactor run returned...'
-        
-    def printStat(self):
-        print 'tick...'
+            print('reactor run returned...')
 
-t=doNothing()
+    @staticmethod
+    def print_stat():
+        print('tick...')
+
+
+t = DoNothing()
 
 engine = QtScript.QScriptEngine()
 
@@ -39,13 +45,11 @@ button = QtGui.QPushButton()
 scriptButton = engine.newQObject(button)
 engine.globalObject().setProperty("button", scriptButton)
 
-app.connect(button, SIGNAL("clicked()"), t.buttonClick)
+app.connect(button, QtCore.SIGNAL("clicked()"), t.button_click)
 
 engine.evaluate("button.text = 'Hello World!'")
 engine.evaluate("button.styleSheet = 'font-style: italic'")
 engine.evaluate("button.show()")
 
 app.exec_()
-print 'fell off the bottom?...'
-
-
+print('fell off the bottom?...')

@@ -1,25 +1,31 @@
+from __future__ import print_function
+
 import sys
 
 from twisted.application import reactors
-import qt4reactor
-qt4reactor.install()
-#reactors.installReactor('qt4')
+
+reactors.installReactor('pyside')
 
 from twisted.internet import reactor, task
-from twisted.python import log
+from twisted.python import log, runtime
+
 log.startLogging(sys.stdout)
- 
-def testReactor():
-    print 'tick...'
+
+
+def testreactor():
+    print('tick...')
+
 
 def doit():
-    task.LoopingCall(testReactor).start(1.0)
-    reactor.callLater(15.0,reactor.stop)
-    
+    task.LoopingCall(testreactor).start(1.0)
+    reactor.callLater(15.0, reactor.stop)
+    log.msg("platform runtime: " + repr(runtime.platform.getType()))
+
+
 reactor.callWhenRunning(doit)
 log.msg('calling reactor.run()')
 reactor.run()
 log.msg('fell off the bottom?...')
 
-#sys.exit(app.exec_())
+# sys.exit(app.exec_())
 
