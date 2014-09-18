@@ -19,11 +19,6 @@ from twisted.python import log, runtime
 from twisted.internet import posixbase
 
 
-# noinspection PyUnresolvedReferences
-import PySide.QtScript as QtScript
-# noinspection PyUnresolvedReferences
-import PySide.QtGui as QtGui
-# noinspection PyUnresolvedReferences
 import PySide.QtCore as QtCore
 
 

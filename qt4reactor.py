@@ -19,11 +19,6 @@ from twisted.internet.interfaces import IReactorFDSet
 from twisted.python import log, runtime
 from twisted.internet import posixbase
 
-# noinspection PyUnresolvedReferences
-import PyQt4.QtScript as QtScript
-# noinspection PyUnresolvedReferences
-import PyQt4.QtGui as QtGui
-
 import PyQt4.QtCore as QtCore
 
 
