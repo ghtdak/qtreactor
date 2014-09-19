@@ -15,18 +15,12 @@ from __future__ import print_function
 
 from twisted.python import runtime
 
-import __init__ as superinit
-
-superinit.setqtname('PyQt4')
+import config
+config.qt_type="PyQt4"
 
 import qtbase
 
-
 if runtime.platform.getType() == 'win32':
-    # noinspection PyUnresolvedReferences
-    from win32event import (WAIT_OBJECT_0, WAIT_TIMEOUT,
-                            QS_ALLINPUT, QS_ALLEVENTS)
-
     install = qtbase.win32install
 else:
     install = qtbase.posixinstall

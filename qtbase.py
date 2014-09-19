@@ -19,14 +19,14 @@ from twisted.internet.interfaces import IReactorFDSet
 from twisted.python import log, runtime
 from twisted.internet import posixbase
 
-# import PyQt4.QtCore as QtCore
+import config
 
-import __init__ as superinit
-
-qtname = superinit.getqtname()
-
-QtCore = __import__(qtname+'.QtCore', fromlist=['nomatter'])
-
+if config.qt_type == "PyQt4":
+    from PyQt4 import QtCore
+elif config.qt_type == "PySide":
+    from PySide import QtCore
+else:
+    pass # todo throw something
 
 # noinspection PyBroadException,PyProtectedMember
 class TwistedSocketNotifier(QtCore.QObject):
@@ -270,6 +270,12 @@ class QtReactor(ReactorSuperclass):
             self._blockApp = QtCore.QEventLoop()
         self.runReturn()
         self._blockApp.exec_()
+
+
+if runtime.platform.getType() == 'win32':
+    # noinspection PyUnresolvedReferences
+    from win32event import (WAIT_OBJECT_0, WAIT_TIMEOUT,
+                            QS_ALLINPUT, QS_ALLEVENTS)
 
 
 class QtEventReactor(QtReactor):
