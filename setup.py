@@ -28,7 +28,7 @@ setup(
     long_description='Twisted Qt Event Loop integration for Pyqt4 and PySide',
     url='https://github.com/ghtdak/qtreactor',
     scripts=glob("./bin/*"),
-    py_modules=['qt4reactor', 'gtrial', 'pysidereactor'],
+    py_modules=['qt4reactor', 'gtrial', 'pysidereactor', 'qtbase'],
     requires=['twisted'],
     extras_require={
         'PyQt4', ['PyQt4'],

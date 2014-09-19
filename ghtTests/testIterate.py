@@ -42,5 +42,3 @@ engine.evaluate("button.show()")
 task.LoopingCall(test_reactor).start(1.0)
 reactor.run()
 log.msg('fell off the bottom?...')
-
-

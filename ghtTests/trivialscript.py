@@ -26,6 +26,3 @@ reactor.callWhenRunning(doit)
 log.msg('calling reactor.run()')
 reactor.run()
 log.msg('fell off the bottom?...')
-
-# sys.exit(app.exec_())
-

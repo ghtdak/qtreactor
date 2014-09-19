@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import qt4reactor
 
-from qt4reactor import QtGui
+from PyQt4 import QtGui
 
 app = QtGui.QApplication(sys.argv)
 qt4reactor.install()
@@ -132,7 +132,7 @@ class MainWindow(QtGui.QMainWindow):
         reactor.connectTCP(server_name, 6667, factory)
 
         # reactor.runReturn()
-        #app.exit()
+        # app.exit()
         #app.exit()
 
         reactor.run()
