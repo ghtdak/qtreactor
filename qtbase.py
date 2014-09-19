@@ -26,7 +26,7 @@ if config.qt_type == "PyQt4":
 elif config.qt_type == "PySide":
     from PySide import QtCore
 else:
-    pass # todo throw something
+    pass  # todo throw something
 
 # noinspection PyBroadException,PyProtectedMember
 class TwistedSocketNotifier(QtCore.QObject):
@@ -135,6 +135,10 @@ class QtReactor(ReactorSuperclass):
         self._timer = QtCore.QTimer()
         self._timer.setSingleShot(True)
         QtCore.QObject.connect(self._timer, QtCore.SIGNAL("timeout()"), self.iterate)
+
+        def msg_process(msgType, msg):
+            pass
+        QtCore.qInstallMsgHandler(msg_process)
 
         # noinspection PyArgumentList
         if QtCore.QCoreApplication.instance() is None:
