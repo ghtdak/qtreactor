@@ -4,7 +4,7 @@ import sys
 
 from twisted.application import reactors
 
-reactors.installReactor('qt4')
+reactors.installReactor('pyside')
 
 from twisted.internet import reactor, task
 from twisted.python import log, runtime

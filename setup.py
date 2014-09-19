@@ -19,15 +19,19 @@ classifiers = [
 
 setup(
     name='qt4reactor',
-    version='1.0',
+    version='1.5',
     license='MIT',
     classifiers=classifiers,
     author='Glenn H. Tarbox',
     author_email='glenn@tarbox.org',
-    description='Twisted Qt4 Integration',
-    long_description='Provides support for Twisted to be driven by the '
-                     'Qt mainloop.',
+    description='Twisted Qt Integration',
+    long_description='Twisted Qt Event Loop integration for Pyqt4 and PySide',
     url='https://github.com/ghtdak/qtreactor',
     scripts=glob("./bin/*"),
-    py_modules=['qt4reactor', 'gtrial', 'pysidereactor'], requires=['twisted']
+    py_modules=['qt4reactor', 'gtrial', 'pysidereactor'],
+    requires=['twisted'],
+    extras_require={
+        'PyQt4', ['PyQt4'],
+        'PySide', ['PySide']
+    }
 )

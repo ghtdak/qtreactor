@@ -42,3 +42,25 @@ Previous maintainer: U{Itamar Shtull-Trauring<mailto:twisted@itamarst.org>}
 Original port to QT4: U{Gabe Rudy<mailto:rudy@goldenhelix.com>}
 Subsequent port by therve
 """
+
+
+class Interceptor(object):
+    def __init__(self):
+        self.qtname = ""
+
+    def setqtname(self, qtname):
+        self.qtname = qtname
+
+    def getqtname(self):
+        return self.qtname
+
+
+interceptor = Interceptor()
+
+
+def setqtname(qtname):
+    interceptor.setqtname(qtname)
+
+
+def getqtname():
+    return interceptor.getqtname()
