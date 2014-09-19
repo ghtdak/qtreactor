@@ -122,8 +122,8 @@ class QtReactor(ReactorSuperclass):
     implements(IReactorFDSet)
 
     def __init__(self):
-        self._reads = set()
-        self._writes = set()
+        self._my_reads = set()
+        self._my_writes = set()
         self._notifiers = {}
         self._timer = QtCore.QTimer()
         self._timer.setSingleShot(True)
@@ -156,13 +156,13 @@ class QtReactor(ReactorSuperclass):
         """
         Add a FileDescriptor for notification of data available to read.
         """
-        self._add(reader, self._reads, QtCore.QSocketNotifier.Read)
+        self._add(reader, self._my_reads, QtCore.QSocketNotifier.Read)
 
     def addWriter(self, writer):
         """
         Add a FileDescriptor for notification of data available to write.
         """
-        self._add(writer, self._writes, QtCore.QSocketNotifier.Write)
+        self._add(writer, self._my_writes, QtCore.QSocketNotifier.Write)
 
     def _remove(self, xer, primary):
         """
@@ -183,25 +183,25 @@ class QtReactor(ReactorSuperclass):
         """
         Remove a Selectable for notification of data available to read.
         """
-        self._remove(reader, self._reads)
+        self._remove(reader, self._my_reads)
 
     def removeWriter(self, writer):
         """
         Remove a Selectable for notification of data available to write.
         """
-        self._remove(writer, self._writes)
+        self._remove(writer, self._my_writes)
 
     def removeAll(self):
         """
         Remove all selectables, and return a list of them.
         """
-        return self._removeAll(self._reads, self._writes)
+        return self._removeAll(self._my_reads, self._my_writes)
 
     def getReaders(self):
-        return list(self._reads)
+        return list(self._my_reads)
 
     def getWriters(self):
-        return list(self._writes)
+        return list(self._my_writes)
 
     def callLater(self, howlong, *args, **kargs):
         rval = super(QtReactor, self).callLater(howlong, *args, **kargs)
