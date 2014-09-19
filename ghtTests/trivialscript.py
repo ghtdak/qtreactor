@@ -17,8 +17,8 @@ def testreactor():
 
 
 def doit():
-    task.LoopingCall(testreactor).start(1.0)
-    reactor.callLater(15.0, reactor.stop)
+    task.LoopingCall(testreactor).start(10.0)
+    reactor.callLater(1500.0, reactor.stop)
     log.msg("platform runtime: " + repr(runtime.platform.getType()))
 
 

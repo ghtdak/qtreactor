@@ -28,9 +28,9 @@ class TwistedSocketNotifier(QtCore.QObject):
     Connection between an fd event and reader/writer callbacks.
     """
 
-    def __init__(self, parent, reactor, watcher, socket_type):
+    def __init__(self, parent, qt_reactor, watcher, socket_type):
         QtCore.QObject.__init__(self, parent)
-        self.reactor = reactor
+        self.qt_reactor = qt_reactor
         self.watcher = watcher
         fd = watcher.fileno()
         self.notifier = QtCore.QSocketNotifier(fd, socket_type, parent)
@@ -43,37 +43,36 @@ class TwistedSocketNotifier(QtCore.QObject):
 
     def shutdown(self):
         self.notifier.setEnabled(False)
-        self.disconnect(self.notifier, QtCore.SIGNAL("activated(int)"), self.fn)
-        self.fn = self.watcher = None
-        self.notifier.deleteLater()
-        self.deleteLater()
+
+        def _shutdown():
+            self.disconnect(self.notifier, QtCore.SIGNAL("activated(int)"), self.fn)
+            self.fn = self.watcher = None
+            self.notifier.deleteLater()
+            self.deleteLater()
+
+        self.qt_reactor.callLater(0.0, _shutdown)
 
     # noinspection PyUnusedLocal
     def read(self, fd):
         if not self.watcher:
             return
-        w = self.watcher
-        # doRead can cause self.shutdown to be called so keep a
-        # reference to self.watcher
 
-        # noinspection PyProtectedMember
         def _read():
             # Don't call me again, until the data has been read
             self.notifier.setEnabled(False)
             try:
-                data = w.doRead()
+                data = self.watcher.doRead()
             except:
-                log.err()
-                self.reactor._disconnectSelectable(w, sys.exc_info()[1], False)
+                self.qt_reactor._disconnectSelectable(self.watcher, sys.exc_info()[1], False)
             else:
                 if data:
-                    self.reactor._disconnectSelectable(w, data, True)
-                elif self.watcher:
+                    self.qt_reactor._disconnectSelectable(self.watcher, data, True)
+                else:
                     self.notifier.setEnabled(True)
 
-            self.reactor._iterate(fromqt=True)
+            self.qt_reactor._iterate(fromqt=True)
 
-        log.callWithLogger(w, _read)
+        log.callWithLogger(self.watcher, _read)
 
     def write(self):
         """
@@ -87,26 +86,23 @@ class TwistedSocketNotifier(QtCore.QObject):
         """
         if not self.watcher:
             return
-        # see above
-        w = self.watcher
 
         # noinspection PyProtectedMember
         def _write():
             self.notifier.setEnabled(False)
             try:
-                data = w.doWrite()
+                data = self.watcher.doWrite()
             except:
-                log.err()
-                self.reactor._disconnectSelectable(w, sys.exc_info()[1], False)
+                self.qt_reactor._disconnectSelectable(self.watcher, sys.exc_info()[1], False)
             else:
                 if data:
-                    self.reactor._disconnectSelectable(w, data, True)
-                elif self.watcher:
+                    self.qt_reactor._disconnectSelectable(self.watcher, data, True)
+                else:
                     self.notifier.setEnabled(True)
 
-            self.reactor._iterate(fromqt=True)
+            self.qt_reactor._iterate(fromqt=True)
 
-        log.callWithLogger(w, _write)
+        log.callWithLogger(self.watcher, _write)
 
 
 # Use kqreactor for MacOS
@@ -197,8 +193,18 @@ class QtReactor(ReactorSuperclass):
         """
         Remove all selectables, and return a list of them.
         """
-        rv = self._removeAll(self._reads, self._writes)
-        return rv
+        for x in self._reads:
+            notifier = self._notifiers.pop(x)
+            notifier.shutdown()
+
+        for x in self._writes:
+            notifier = self._notifiers.pop(x)
+            notifier.shutdown()
+
+        r = list(self._reads | self._writes)
+        self._reads.clear()
+        self._writes.clear()
+        return r
 
     def getReaders(self):
         return list(self._reads)
