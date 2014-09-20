@@ -26,7 +26,7 @@ if config.qt_type == "PyQt4":
 elif config.qt_type == "PySide":
     from PySide import QtCore
 else:
-    pass  # todo throw something
+    raise Exception("Must Have PyQt4 or PySide")
 
 # noinspection PyBroadException,PyProtectedMember
 class TwistedSocketNotifier(QtCore.QObject):
@@ -138,6 +138,7 @@ class QtReactor(ReactorSuperclass):
 
         def msg_process(msgType, msg):
             pass
+
         QtCore.qInstallMsgHandler(msg_process)
 
         # noinspection PyArgumentList
@@ -248,6 +249,8 @@ class QtReactor(ReactorSuperclass):
         """
         if not self.running and self._blockApp:
             self._blockApp.quit()
+            for c in self.getDelayedCalls():
+                c.cancel()
         self._timer.stop()
         delay = max(delay, 1)
         if not fromqt:
