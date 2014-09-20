@@ -15,8 +15,9 @@ from __future__ import print_function
 
 from twisted.python import runtime
 
-import config
-config.qt_type="PyQt4"
+import qt4reactor_config
+
+qt4reactor_config.qt_type = "PyQt4"
 
 import qtbase
 

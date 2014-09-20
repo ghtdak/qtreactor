@@ -19,14 +19,15 @@ from twisted.internet.interfaces import IReactorFDSet
 from twisted.python import log, runtime
 from twisted.internet import posixbase
 
-import config
+import qt4reactor_config
 
-if config.qt_type == "PyQt4":
+if qt4reactor_config.qt_type == "PyQt4":
     from PyQt4 import QtCore
-elif config.qt_type == "PySide":
+elif qt4reactor_config.qt_type == "PySide":
     from PySide import QtCore
 else:
     raise Exception("Must Have PyQt4 or PySide")
+
 
 # noinspection PyBroadException,PyProtectedMember
 class TwistedSocketNotifier(QtCore.QObject):

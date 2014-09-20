@@ -1,7 +1,8 @@
 from __future__ import print_function
 import sys
 
-import PyQt4 as Qt
+import PyQt4.QtCore as QtCore
+import PyQt4.QtScript as QtScript
 import PyQt4.QtGui as QtGui
 
 app = QtGui.QApplication(sys.argv)
@@ -15,12 +16,12 @@ from twisted.python import log
 log.startLogging(sys.stdout)
 
 
-class DoNothing(Qt.QtCore.QObject):
+class DoNothing(QtCore.QObject):
     def __init__(self):
         self.count = 0
         self.looping = False
         task.LoopingCall(self.print_stat).start(1.0)
-        Qt.QtCore.QObject.__init__(self)
+        QtCore.QObject.__init__(self)
 
     def do_something(self):
         if not self.looping:
@@ -44,13 +45,13 @@ class DoNothing(Qt.QtCore.QObject):
 
 t = DoNothing()
 
-engine = Qt.QtScript.QScriptEngine()
+engine = QtScript.QScriptEngine()
 
-button = Qt.QtGui.QPushButton()
+button = QtGui.QPushButton()
 scriptButton = engine.newQObject(button)
 engine.globalObject().setProperty("button", scriptButton)
 
-app.connect(button, Qt.QtCore.SIGNAL("clicked()"), t.button_click)
+app.connect(button, QtCore.SIGNAL("clicked()"), t.button_click)
 
 engine.evaluate("button.text = 'Hello World!'")
 engine.evaluate("button.styleSheet = 'font-style: italic'")
