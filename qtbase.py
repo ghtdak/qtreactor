@@ -77,7 +77,7 @@ class TwistedSocketNotifier(QtCore.QObject):
                 else:
                     self.notifier.setEnabled(True)
 
-            self.qt_reactor._iterate(fromqt=True)
+            self.qt_reactor.invoke_reactor()
 
         log.callWithLogger(self.watcher, _read)
 
@@ -107,32 +107,19 @@ class TwistedSocketNotifier(QtCore.QObject):
                 else:
                     self.notifier.setEnabled(True)
 
-            self.qt_reactor._iterate(fromqt=True)
+            self.qt_reactor.invoke_reactor()
 
         log.callWithLogger(self.watcher, _write)
 
 
-# Use kqreactor for MacOS
-# (ht: Tomas Touceda / LEAP)
-
-ReactorSuperclass = posixbase.PosixReactorBase
-
-if runtime.platform.isMacOSX():
-    from twisted.internet import kqreactor
-
-    ReactorSuperclass = kqreactor.KQueueReactor
-
-
-# noinspection PyCallByClass
-# class QtReactor(posixbase.PosixReactorBase):
-# noinspection PyCallByClass,PyPep8Naming
-class QtReactor(ReactorSuperclass):
+class QtReactor(posixbase.PosixReactorBase):
     implements(IReactorFDSet)
 
     def __init__(self):
         self._reads = set()
         self._writes = set()
         self._notifiers = {}
+        self._guard = False
         self._timer = QtCore.QTimer()
         self._timer.setSingleShot(True)
         QtCore.QObject.connect(self._timer, QtCore.SIGNAL("timeout()"), self.iterate)
@@ -143,16 +130,13 @@ class QtReactor(ReactorSuperclass):
         QtCore.qInstallMsgHandler(msg_process)
 
         # noinspection PyArgumentList
-        if QtCore.QCoreApplication.instance() is None:
-            # Application Object has not been started yet
-            self.qApp = QtCore.QCoreApplication([])
-            self._ownApp = True
+        self.qApp = QtCore.QCoreApplication.instance()
+        if self.qApp is None:
+            self._blockApp = self.qApp = QtCore.QCoreApplication([])
         else:
-            # noinspection PyArgumentList
-            self.qApp = QtCore.QCoreApplication.instance()
-            self._ownApp = False
-        self._blockApp = None
-        ReactorSuperclass.__init__(self)
+            self._blockApp = QtCore.QEventLoop()
+
+        super(QtReactor, self).__init__()
 
     def _add(self, xer, primary, descriptor_type):
         """
@@ -202,18 +186,15 @@ class QtReactor(ReactorSuperclass):
         self._remove(writer, self._writes)
 
     def removeAll(self):
-        """
-        Remove all selectables, and return a list of them.
-        """
-        for x in self._reads:
-            notifier = self._notifiers.pop(x)
-            notifier.shutdown()
+
+        readers = self._reads - self._internalReaders
+        for x in readers:
+            self._notifiers.pop(x).shutdown()
 
         for x in self._writes:
-            notifier = self._notifiers.pop(x)
-            notifier.shutdown()
+            self._notifiers.pop(x).notifier.shutdown()
 
-        r = list(self._reads | self._writes)
+        r = list(readers | self._writes)
         self._reads.clear()
         self._writes.clear()
         return r
@@ -235,35 +216,32 @@ class QtReactor(ReactorSuperclass):
         self._timer.start()
 
     def _iterate(self, delay=None, fromqt=False):
-        """
-        See twisted.internet.interfaces.IReactorCore.iterate.
-        """
+
+        if self._guard:
+            return
+
+        self._guard = True
         self.runUntilCurrent()
         self.doIteration(delay, fromqt)
+        self._guard = False
 
     iterate = _iterate
 
     def doIteration(self, delay=None, fromqt=False):
-        """
-        This method is called by a Qt timer or by network activity
-        on a file descriptor
-        """
-        if not self.running and self._blockApp:
-            self._blockApp.quit()
-            for c in self.getDelayedCalls():
-                c.cancel()
-        self._timer.stop()
-        delay = max(delay, 1)
-        if not fromqt:
-            self.qApp.processEvents(QtCore.QEventLoop.AllEvents, delay * 1000)
-        if self.timeout() is None:
-            timeout = 0.1
-        elif self.timeout() == 0:
-            timeout = 0
-        else:
+
+        if self._started:
             timeout = self.timeout()
-        self._timer.setInterval(timeout * 1000)
-        self._timer.start()
+
+            if timeout is None:
+                timeout = 0.1
+            elif timeout == 0:
+                timeout = 0
+
+            self._timer.setInterval(timeout * 1000)
+            self._timer.start()
+
+        else:
+            self._blockApp.quit()
 
     # noinspection PyPep8Naming
     def runReturn(self, installSignalHandlers=True):
@@ -272,10 +250,6 @@ class QtReactor(ReactorSuperclass):
 
     # noinspection PyPep8Naming
     def run(self, installSignalHandlers=True):
-        if self._ownApp:
-            self._blockApp = self.qApp
-        else:
-            self._blockApp = QtCore.QEventLoop()
         self.runReturn()
         self._blockApp.exec_()
 

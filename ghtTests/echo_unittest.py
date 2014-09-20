@@ -12,16 +12,9 @@ from twisted.application import reactors
 
 reactors.installReactor('qt4')
 
-#reactors.installReactor('kqueue')
-
-from twisted.python import log
-
-import sys
-
-log.startLogging(sys.stdout)
-
+from twisted.trial import unittest
 from twisted.internet.protocol import DatagramProtocol
-from twisted.internet import reactor
+from twisted.internet import reactor, task
 
 
 # noinspection PyClassHasNoInit
@@ -35,32 +28,28 @@ class EchoClientDatagramProtocol(DatagramProtocol):
         self.sendflag = False
 
     def startProtocol(self):
-        #log.msg("client start protocol")
         self.transport.connect('127.0.0.1', self.useport)
         self.senddatagram()
 
     def senddatagram(self):
-        #log.msg("client send datagram")
         datagram = self.long_string
         self.transport.write(datagram)
 
     def datagramReceived(self, datagram, host):
-        #log.msg("client datagram received")
-        #log.msg('Datagram received: ', repr(datagram))
         if self.sendflag:
             reactor.callLater(0.001, self.senddatagram)
 
 
-def build_client(port):
+def build_client(port, stopsend, stoplisten):
     protocol = EchoClientDatagramProtocol()
     protocol.useport = port
-    reactor.listenUDP(0, protocol)
+    r = reactor.listenUDP(0, protocol)
+    reactor.callLater(stoplisten, r.stopListening)
+    reactor.callLater(stopsend, protocol.stop_sending)
     return protocol
-
 
 #------------------------------------------
 # Server
-
 
 # noinspection PyClassHasNoInit
 class EchoUDP(DatagramProtocol):
@@ -68,21 +57,27 @@ class EchoUDP(DatagramProtocol):
         #log.msg("server received: ", repr(datagram), repr(address))
         self.transport.write(datagram, address)
 
-def trap_me():
-    log.msg("trapped")
+def build_server(port, timeout):
+    echo = EchoUDP()
+    r = reactor.listenUDP(port, echo)
+    reactor.callLater(timeout, r.stopListening)
+    return echo
 
-begin_port = 5010
+class TrialTest(unittest.TestCase):
 
-def main():
-    for port in xrange(begin_port, begin_port + 50):
-        reactor.listenUDP(port, EchoUDP())
-        protocol = build_client(port)
-        reactor.callLater(12.0, protocol.stop_sending)
+    def setup(self):
+        pass
 
-    reactor.callLater(10, trap_me)
-    reactor.callLater(15, reactor.stop)
-    reactor.run()
+    def test_main(self):
+        begin_port = 5010
+        for port in xrange(begin_port, begin_port + 50):
+            build_client(port, 10, 11)
+            build_server(port, 12)
 
+        def callme():
+            return 'he called'
 
-if __name__ == '__main__':
-    main()
+        return task.deferLater(reactor, 15, callme)
+
+    def tearDown(self):
+        print('teardown')
