@@ -15,15 +15,15 @@ from __future__ import print_function
 
 from twisted.python import runtime
 
-import qt4reactor_config
+import qtreactor_config
 
-qt4reactor_config.set_qt_name("PyQt4")
+qtreactor_config.set_qt_name("PyQt4")
 
-import qtbase
+import qt4base
 
 if runtime.platform.getType() == 'win32':
-    install = qtbase.win32install
+    install = qt4base.win32install
 else:
-    install = qtbase.posixinstall
+    install = qt4base.posixinstall
 
 __all__ = ["install"]

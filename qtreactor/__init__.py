@@ -43,4 +43,4 @@ Original port to QT4: U{Gabe Rudy<mailto:rudy@goldenhelix.com>}
 Subsequent port by therve
 """
 
-__ALL__=['qt4reactor','pysidereactor' ]
+__ALL__=['pyqt4reactor','pyside4reactor' ]

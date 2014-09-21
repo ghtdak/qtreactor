@@ -19,11 +19,11 @@ from twisted.internet.interfaces import IReactorFDSet
 from twisted.python import log, runtime
 from twisted.internet import posixbase
 
-import qt4reactor_config
+import qtreactor_config
 
-if qt4reactor_config.get_qt_name() == "PyQt4":
+if qtreactor_config.get_qt_name() == "PyQt4":
     from PyQt4 import QtCore
-elif qt4reactor_config.get_qt_name() == "PySide":
+elif qtreactor_config.get_qt_name() == "PySide":
     from PySide import QtCore
 else:
     raise Exception("Must Have PyQt4 or PySide")
