@@ -17,7 +17,7 @@ from twisted.python import runtime
 
 import qt4reactor_config
 
-qt4reactor_config.qt_type = "PyQt4"
+qt4reactor_config.set_qt_name("PyQt4")
 
 import qtbase
 

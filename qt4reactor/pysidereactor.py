@@ -17,13 +17,17 @@ from twisted.python import runtime
 
 import qt4reactor_config
 
-qt4reactor_config.qt_type = "PySide"
+# restricts pyside loading if config is pre-set.
 
-import qtbase
+if qt4reactor_config.qt_type == "":
 
-if runtime.platform.getType() == 'win32':
-    install = qtbase.win32install
-else:
-    install = qtbase.posixinstall
+    qt4reactor_config.qt_type = "PySide"
 
-__all__ = ["install"]
+    import qtbase
+
+    if runtime.platform.getType() == 'win32':
+        install = qtbase.win32install
+    else:
+        install = qtbase.posixinstall
+
+    __all__ = ["install"]

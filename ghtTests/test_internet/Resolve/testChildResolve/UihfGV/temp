@@ -1,0 +1,20 @@
+
+import qt4reactor.qtbase
+qt4reactor.qtbase.install()
+from twisted.internet import reactor
+
+class Foo:
+    def __init__(self):
+        reactor.callWhenRunning(self.start)
+        self.timer = reactor.callLater(3, self.failed)
+    def start(self):
+        reactor.resolve('localhost').addBoth(self.done)
+    def done(self, res):
+        print 'done', res
+        reactor.stop()
+    def failed(self):
+        print 'failed'
+        self.timer = None
+        reactor.stop()
+f = Foo()
+reactor.run()
