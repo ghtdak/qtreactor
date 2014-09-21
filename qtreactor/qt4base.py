@@ -153,13 +153,13 @@ class QtReactor(posixbase.PosixReactorBase):
                                                            QtCore.QSocketNotifier.Write)
 
     def removeReader(self, r):
-        if r in self._reads:
+        if r in self._reads[0]:
             self._reads[0].remove(r)
             notifier = self._reads[1].pop(r)
             notifier.shutdown()
 
     def removeWriter(self, w):
-        if w in self._reads:
+        if w in self._writes[0]:
             self._writes[0].remove(w)
             notifier = self._writes[1].pop(w)
             notifier.shutdown()

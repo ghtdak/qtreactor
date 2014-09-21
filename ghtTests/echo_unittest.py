@@ -66,7 +66,7 @@ def build_server(port, timeout):
 class TrialTest(unittest.TestCase):
 
     def setup(self):
-        pass
+        print("setup")
 
     def test_main(self):
         begin_port = 5010
@@ -75,6 +75,7 @@ class TrialTest(unittest.TestCase):
             build_server(port, 12)
 
         def callme():
+            print("deferLater callback")
             return 'he called'
 
         return task.deferLater(reactor, 15, callme)
