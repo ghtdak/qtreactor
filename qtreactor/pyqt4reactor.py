@@ -21,9 +21,34 @@ qtreactor_config.set_qt_name("PyQt4")
 
 import qt4base
 
+class pyqt4reactor(qt4base.QtReactor):
+    pass
+
+class pyqt4eventreactor(qt4base.QtReactor):
+    pass
+
+def posixinstall():
+    """
+    Install the Qt reactor.
+    """
+    p = pyqt4reactor()
+    from twisted.internet.main import installReactor
+
+    installReactor(p)
+
+
+def win32install():
+    """
+    Install the Qt reactor.
+    """
+    p = pyqt4eventreactor()
+    from twisted.internet.main import installReactor
+
+    installReactor(p)
+
 if runtime.platform.getType() == 'win32':
-    install = qt4base.win32install
+    install = win32install
 else:
-    install = qt4base.posixinstall
+    install = posixinstall
 
 __all__ = ["install"]

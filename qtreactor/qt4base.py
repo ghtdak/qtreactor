@@ -128,7 +128,7 @@ class QtReactor(posixbase.PosixReactorBase):
         self._timer.setSingleShot(True)
         QtCore.QObject.connect(self._timer, QtCore.SIGNAL("timeout()"), self.iterate)
 
-        QtCore.qInstallMsgHandler(msg_blast)
+        QtCore.qInstallMsgHandler(msg_stub)
 
         # noinspection PyArgumentList
         self.qApp = QtCore.QCoreApplication.instance()
@@ -145,7 +145,6 @@ class QtReactor(posixbase.PosixReactorBase):
             self._reads[0].add(r)
             self._reads[1][r] = TwistedSocketNotifier(None, self, r,
                                                            QtCore.QSocketNotifier.Read)
-
     def addWriter(self, w):
         if w not in self._writes[0]:
             self._writes[0].add(w)
@@ -304,22 +303,5 @@ class QtEventReactor(QtReactor):
         self.doIteration(delay)
 
 
-def posixinstall():
-    """
-    Install the Qt reactor.
-    """
-    p = QtReactor()
-    from twisted.internet.main import installReactor
 
-    installReactor(p)
-
-
-def win32install():
-    """
-    Install the Qt reactor.
-    """
-    p = QtEventReactor()
-    from twisted.internet.main import installReactor
-
-    installReactor(p)
 
