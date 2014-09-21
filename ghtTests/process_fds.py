@@ -8,7 +8,7 @@ reactor.spawnProcess()
 
 import os, sys
 
-debug = 0
+debug = 1
 
 if debug: stderr = os.fdopen(2, "w")
 

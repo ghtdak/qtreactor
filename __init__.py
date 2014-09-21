@@ -42,3 +42,5 @@ Previous maintainer: U{Itamar Shtull-Trauring<mailto:twisted@itamarst.org>}
 Original port to QT4: U{Gabe Rudy<mailto:rudy@goldenhelix.com>}
 Subsequent port by therve
 """
+
+__ALL__=['qt4reactor','pysidereactor' ]

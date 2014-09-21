@@ -1,3 +1,6 @@
+
+Qt4Reactor
+
 Using the QtReactor
 -------------------
 
@@ -28,7 +31,9 @@ alternatively (gui example):
 Testing
 ~~~~~~~
 
--  test with:
+test with:
+
+::
 
    trial --reactor=qt4 twisted (or twisted.test or
    twisted.test.test\_internet)

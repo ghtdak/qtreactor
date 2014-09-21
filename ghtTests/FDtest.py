@@ -36,6 +36,11 @@ from twisted.internet import reactor, protocol, error, interfaces, defer
 from twisted.trial import unittest
 from twisted.python import util, runtime, procutils
 
+from twisted.test import test_process
+
+#testroot = "/usr/local/lib/python2.7/site-packages/twisted/test/process_fds.py"
+
+testroot = __file__
 
 class FDChecker(protocol.ProcessProtocol):
     state = 0
@@ -122,7 +127,7 @@ class FDTest(unittest.TestCase):
 
     def testFD(self):
         exe = sys.executable
-        scriptPath = util.sibpath(__file__, "process_fds.py")
+        scriptPath = util.sibpath(testroot, "process_fds.py")
         d = defer.Deferred()
         p = FDChecker(d)
         reactor.spawnProcess(p, exe, [exe, "-u", scriptPath], env=None,
@@ -139,7 +144,7 @@ class FDTest(unittest.TestCase):
         # actually stops. This test *requires* SIGCHLD catching to work,
         # as there is no other way to find out the process is done.
         exe = sys.executable
-        scriptPath = util.sibpath(__file__, "process_linger.py")
+        scriptPath = util.sibpath(testroot, "process_linger.py")
         p = Accumulator()
         d = p.endedDeferred = defer.Deferred()
         reactor.spawnProcess(p, exe, [exe, "-u", scriptPath], env=None,
