@@ -5,9 +5,9 @@
 *.class
 *.cache
 _trial_temp
-*/test_*
+#*/test_*
 MANIFEST
 dist/
 build/
 *.egg-info
-/ghtTests/
+#/ghtTests/
