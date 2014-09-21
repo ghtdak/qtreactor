@@ -17,7 +17,7 @@ import time
 
 from twisted.application import reactors
 
-reactors.installReactor('qt4')
+reactors.installReactor('kqueue')
 
 from twisted.python.compat import _PY3
 from twisted.trial import unittest

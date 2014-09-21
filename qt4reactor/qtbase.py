@@ -28,7 +28,6 @@ elif qt4reactor_config.get_qt_name() == "PySide":
 else:
     raise Exception("Must Have PyQt4 or PySide")
 
-
 # noinspection PyBroadException,PyProtectedMember
 class TwistedSocketNotifier(QtCore.QObject):
     """
@@ -111,23 +110,25 @@ class TwistedSocketNotifier(QtCore.QObject):
 
         log.callWithLogger(self.watcher, _write)
 
+def msg_stub(msgType, msg):
+    pass
+
+def msg_blast(msgType, msg):
+    log.msg("Qt says: ", msgType, msg)
+
 
 class QtReactor(posixbase.PosixReactorBase):
     implements(IReactorFDSet)
 
     def __init__(self):
-        self._reads = set()
-        self._writes = set()
-        self._notifiers = {}
+        self._reads = [set(), {}]
+        self._writes = [set(), {}]
         self._guard = False
         self._timer = QtCore.QTimer()
         self._timer.setSingleShot(True)
         QtCore.QObject.connect(self._timer, QtCore.SIGNAL("timeout()"), self.iterate)
 
-        def msg_process(msgType, msg):
-            pass
-
-        QtCore.qInstallMsgHandler(msg_process)
+        QtCore.qInstallMsgHandler(msg_blast)
 
         # noinspection PyArgumentList
         self.qApp = QtCore.QCoreApplication.instance()
@@ -138,65 +139,48 @@ class QtReactor(posixbase.PosixReactorBase):
 
         super(QtReactor, self).__init__()
 
-    def _add(self, xer, primary, descriptor_type):
-        """
-        Private method for adding a descriptor from the event loop.
 
-        It takes care of adding it if  new or modifying it if already added
-        for another state (read -> read/write for example).
-        """
-        if xer not in primary:
-            primary.add(xer)
-            self._notifiers[xer] = TwistedSocketNotifier(None, self, xer, descriptor_type)
+    def addReader(self, r):
+        if r not in self._reads[0]:
+            self._reads[0].add(r)
+            self._reads[1][r] = TwistedSocketNotifier(None, self, r,
+                                                           QtCore.QSocketNotifier.Read)
 
-    def addReader(self, reader):
-        """
-        Add a FileDescriptor for notification of data available to read.
-        """
-        self._add(reader, self._reads, QtCore.QSocketNotifier.Read)
+    def addWriter(self, w):
+        if w not in self._writes[0]:
+            self._writes[0].add(w)
+            self._writes[1][w] = TwistedSocketNotifier(None, self, w,
+                                                           QtCore.QSocketNotifier.Write)
 
-    def addWriter(self, writer):
-        """
-        Add a FileDescriptor for notification of data available to write.
-        """
-        self._add(writer, self._writes, QtCore.QSocketNotifier.Write)
-
-    def _remove(self, xer, primary):
-        """
-        Private method for removing a descriptor from the event loop.
-
-        It does the inverse job of _add, and also add a check in case of the fd
-        has gone away.
-        """
-        if xer in primary:
-            primary.remove(xer)
-            notifier = self._notifiers.pop(xer)
+    def removeReader(self, r):
+        if r in self._reads:
+            self._reads[0].remove(r)
+            notifier = self._reads[1].pop(r)
             notifier.shutdown()
 
-    def removeReader(self, reader):
-        """
-        Remove a Selectable for notification of data available to read.
-        """
-        self._remove(reader, self._reads)
+    def removeWriter(self, w):
+        if w in self._reads:
+            self._writes[0].remove(w)
+            notifier = self._writes[1].pop(w)
+            notifier.shutdown()
 
-    def removeWriter(self, writer):
-        """
-        Remove a Selectable for notification of data available to write.
-        """
-        self._remove(writer, self._writes)
 
     def removeAll(self):
 
-        readers = self._reads - self._internalReaders
+        readers = self._reads[0] - self._internalReaders
         for x in readers:
-            self._notifiers.pop(x).shutdown()
+            self._reads[1].pop(x).shutdown()
 
-        for x in self._writes:
-            self._notifiers.pop(x).notifier.shutdown()
+        for x in self._writes[0]:
+            self._writes[1].pop(x).shutdown()
 
-        r = list(readers | self._writes)
-        self._reads.clear()
-        self._writes.clear()
+        r = list(readers | self._writes[0])
+
+        self._reads[0].clear()
+        self._writes[0].clear()
+        self._reads[1].clear()
+        self._writes[1].clear()
+
         return r
 
     def getReaders(self):
