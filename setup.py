@@ -31,9 +31,7 @@ setup(
     download_url='https://github.com/ghtdak/qtreactor/tarball/master/#egg-qt4reactor.1.6.dev.1',
     dependency_links=['https://github.com/ghtdak/qtreactor/tarball/master/#egg-qt4reactor.1.6.dev.1'],
     scripts=glob("./bin/*"),
-    py_modules=['qt4reactor'],
+    py_modules=['qtreactor'],
     keywords=['Qt', 'twisted'],
     install_requires=['twisted']
-
 )
-

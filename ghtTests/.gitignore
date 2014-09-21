@@ -1,0 +1,6 @@
+# Ignore any file in this directory except for this file and *.py files
+# as testing tends to spew here
+# pretty cool trick ref: http://stackoverflow.com/a/17821597/4022960
+*
+!/.gitignore
+!*.py

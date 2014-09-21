@@ -4,10 +4,9 @@
 *.pyo
 *.class
 *.cache
-_trial_temp
-#*/test_*
+_trial_temp*
 MANIFEST
 dist/
 build/
 *.egg-info
-#/ghtTests/
+

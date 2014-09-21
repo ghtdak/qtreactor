@@ -8,35 +8,32 @@ Before running / importing any other Twisted code, invoke:
 
 ::
 
-    app = QApplication(sys.argv) # your code to init Qt
+    app = QApplication(sys.argv) # your code to init QtCore
     from twisted.application import reactors
-    reactors.installReactor('qt4')
+    reactors.installReactor('pyqt4')
 
 or
 
 ::
 
-    app = QApplication(sys.argv) # your code to init Qt
+    app = QApplication(sys.argv) # your code to init QtCore
     from twisted.application import reactors
-    reactors.installReactor('pyside')
+    reactors.installReactor('pyside4')
 
 alternatively (gui example):
 
 ::
 
-    app = PyQt4.QtGui(sys.argv) # your code to init Qt
-    from twisted.application import reactors
-    qt4reactor.install
+    app = PyQt4.QtGui(sys.argv) # your code to init QtGui
+    from qtreactor import pyqt4reactor
+    pyqt4reactor.install()
 
 Testing
 ~~~~~~~
 
-test with:
-
 ::
 
-   trial --reactor=qt4 twisted (or twisted.test or
-   twisted.test.test\_internet)
+   trial --reactor=pyqt4 [twisted] [twisted.test] [twisted.test.test_internet]
 
 Testing with a Gui
 ~~~~~~~~~~~~~~~~~~
