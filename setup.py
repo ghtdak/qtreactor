@@ -23,7 +23,7 @@ classifiers = [
 
 setup(
     name='qt4reactor',
-    version='1.5',
+    version='1.6',
     license='MIT',
     classifiers=classifiers,
     author='Glenn H. Tarbox',
@@ -31,6 +31,7 @@ setup(
     description='Twisted Qt Integration',
     long_description=read('README.rst'),
     url='https://github.com/ghtdak/qtreactor',
+    download_url='https://github.com/ghtdak/qtreactor/tarball/master/#egg-qt4reactor.1.6',
     scripts=glob("./bin/*"),
     packages=find_packages(),
     py_modules=['qt4reactor'],
