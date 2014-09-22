@@ -7,9 +7,9 @@ from PySide.QtCore import SIGNAL
 
 app = QtGui.QApplication(sys.argv)
 
-import qt4reactor
+from qtreactor import pyqt4reactor
 
-qt4reactor.install()
+pyqt4reactor.install()
 
 from twisted.internet import reactor, task
 from twisted.python import log
