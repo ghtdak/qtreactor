@@ -1,6 +1,6 @@
-
+#!/usr/bin/env python
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 from glob import glob
 
 def read(fname):
@@ -14,6 +14,9 @@ classifiers = [
     'License :: OSI Approved :: MIT License',
     'Operating System :: OS Independent',
     'Programming Language :: Python',
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 2.6',
+    'Programming Language :: Python :: 2.7',
     'Natural Language :: English',
     'Topic :: Software Development :: Libraries :: Python Modules'
 ]
@@ -28,10 +31,8 @@ setup(
     description='Twisted Qt Integration',
     long_description=read('README.rst'),
     url='https://github.com/ghtdak/qtreactor',
-    download_url='https://github.com/ghtdak/qtreactor/tarball/master/#egg-qt4reactor.1.6.dev.1',
-    dependency_links=['https://github.com/ghtdak/qtreactor/tarball/master/#egg-qt4reactor.1.6.dev.1'],
     scripts=glob("./bin/*"),
-    py_modules=['qtreactor'],
+    packages=find_packages(),
     keywords=['Qt', 'twisted'],
     install_requires=['twisted']
 )
