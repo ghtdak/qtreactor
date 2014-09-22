@@ -33,6 +33,7 @@ setup(
     url='https://github.com/ghtdak/qtreactor',
     scripts=glob("./bin/*"),
     packages=find_packages(),
+    py_modules=['qt4reactor'],
     keywords=['Qt', 'twisted'],
     install_requires=['twisted']
 )
