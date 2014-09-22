@@ -17,17 +17,38 @@ from twisted.python import runtime
 
 import qtreactor_config
 
-# restricts pyside loading if config is pre-set.
+qtreactor_config.set_qt_name("PySide")
 
-if qtreactor_config.qt_type == "":
+import qt4base
 
-    qtreactor_config.qt_type = "PySide"
+class pyqt4reactor(qt4base.QtReactor):
+    pass
 
-    import qt4base
+class pyqt4eventreactor(qt4base.QtReactor):
+    pass
 
-    if runtime.platform.getType() == 'win32':
-        install = qt4base.win32install
-    else:
-        install = qt4base.posixinstall
+def posixinstall():
+    """
+    Install the Qt reactor.
+    """
+    p = pyqt4reactor()
+    from twisted.internet.main import installReactor
 
-    __all__ = ["install"]
+    installReactor(p)
+
+
+def win32install():
+    """
+    Install the Qt reactor.
+    """
+    p = pyqt4eventreactor()
+    from twisted.internet.main import installReactor
+
+    installReactor(p)
+
+if runtime.platform.getType() == 'win32':
+    install = win32install
+else:
+    install = posixinstall
+
+__all__ = ["install"]
