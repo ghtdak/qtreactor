@@ -4,8 +4,7 @@
 
 from twisted.application.reactors import Reactor
 
-#support legacy naming
-qt4 = Reactor('qt4', 'qtreactor.pyqt4reactor', 'PyQt4 integration reactor')
+qt4 = Reactor('qt4', 'qt4reactor', 'PyQt4 integration reactor')
 pyqt4 = Reactor('pyqt4', 'qtreactor.pyqt4reactor', 'PyQt4 integration reactor')
 pyside4 = Reactor('pyside4', 'qtreactor.pyside4reactor', 'PySide4 integration reactor')
 qt4bad = Reactor('qt4bad', 'qt4reactor_bad', 'Qt4 broken reactor')
