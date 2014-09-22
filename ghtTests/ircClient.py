@@ -1,11 +1,11 @@
 from __future__ import print_function
 
-import qt4reactor
+from qtreactor import pyqt4reactor
 
 from PyQt4 import QtGui
 
 app = QtGui.QApplication(sys.argv)
-qt4reactor.install()
+pyqt4reactor.install()
 
 from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol

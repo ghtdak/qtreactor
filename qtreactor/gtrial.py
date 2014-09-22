@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 
 import sys
 
@@ -8,7 +8,7 @@ from PyQt4.QtCore import SIGNAL
 
 app = QtGui.QApplication(sys.argv)
 
-import pyqt4reactor
+from qtreactor import pyqt4reactor
 
 pyqt4reactor.install()
 

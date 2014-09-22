@@ -22,6 +22,6 @@ if hasattr(os, "getuid") and os.getuid() != 0:
 sys.path[:] = map(os.path.abspath, sys.path)
 # end chdir armor
 
-from gtrial import run
+from qtreactor.gtrial import run
 
 run()

@@ -11,7 +11,7 @@ Maintainer: U{Glenn H Tarbox, PhD<mailto:glenn@tarbox.org>}
 
 """
 
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 import sys
 
 from zope.interface import implements
@@ -19,7 +19,7 @@ from twisted.internet.interfaces import IReactorFDSet
 from twisted.python import log, runtime
 from twisted.internet import posixbase
 
-import qtreactor_config
+from qtreactor import qtreactor_config
 
 if qtreactor_config.get_qt_name() == "PyQt4":
     from PyQt4 import QtCore

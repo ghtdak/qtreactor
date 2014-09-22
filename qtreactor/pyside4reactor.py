@@ -11,15 +11,15 @@ Maintainer: U{Glenn H Tarbox, PhD<mailto:glenn@tarbox.org>}
 
 """
 
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 
 from twisted.python import runtime
 
-import qtreactor_config
+from qtreactor import qtreactor_config
 
 qtreactor_config.set_qt_name("PySide")
 
-import qt4base
+from qtreactor import qt4base
 
 class pyqt4reactor(qt4base.QtReactor):
     pass
