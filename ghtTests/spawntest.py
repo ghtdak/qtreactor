@@ -13,12 +13,12 @@ from twisted.python import log
 
 log.startLogging(sys.stdout)
 
-
 resolve_helper = """
+import sys
+print sys.path
 import {0}
 {0}.install()
 from twisted.internet import reactor
-import sys
 
 class Foo:
     def __init__(self):
@@ -75,7 +75,9 @@ def spawn():
     helperFile.close()
 
     env = os.environ.copy()
-    env['PYTHONPATH'] = os.pathsep.join(sys.path)
+    s=os.pathsep.join(['/Users/ght/PycharmProjects/qtreactor']+sys.path)
+    log.msg("My Beautiful PATH",s," END OF MY BEAUTIFUL PATH")
+    env['PYTHONPATH'] = s
 
     log.msg(env)
 

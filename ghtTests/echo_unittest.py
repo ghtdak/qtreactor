@@ -10,7 +10,7 @@ __author__ = 'ght'
 
 from twisted.application import reactors
 
-reactors.installReactor('qt4')
+reactors.installReactor('pyqt4')
 
 from twisted.trial import unittest
 from twisted.internet.protocol import DatagramProtocol

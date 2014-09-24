@@ -1,21 +1,32 @@
 from __future__ import print_function
 __author__ = 'ght'
 
-import qtreactor.pyqt4reactor
-#qtreactor.pyqt4reactor.install()
-
 from twisted.application import reactors
+
 reactors.installReactor('pyqt4')
 
-#from ghtTests.texboxtest import buildgui
+from twisted.internet.task import  LoopingCall
+from twisted.internet import  reactor
 
-#form = buildgui()
+from twisted.python import log
 
 import sys
 #log.startLogging(sys.stdout)
 
 trialpath = '/usr/local/bin/trial'
 trial = open(trialpath,'r').read()
+
+def aliveness():
+    print('tick')
+
+lc = LoopingCall(aliveness)
+
+def shutdown():
+    lc.stop()
+
+lc = LoopingCall(aliveness)
+reactor.addSystemEventTrigger('before','shutdown',shutdown)
+lc.start(1)
 
 import contextlib
 @contextlib.contextmanager
@@ -25,9 +36,8 @@ def redirect_argv(num):
     yield
     sys.argv[:] = sys._argv
 
+print(sys.argv)
 
-#sys.stdout = open('/tmp/unitspew.txt','w')
 with redirect_argv([trialpath,
-                    'twisted.test.test_ftp',
-                    'twisted.test.test_internet']):
+                    'twisted.test.test_ftp']):
     exec (trial)
