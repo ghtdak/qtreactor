@@ -34,12 +34,13 @@ Original port to QT4: U{Gabe Rudy<mailto:rudy@goldenhelix.com>}
 Subsequent port by therve
 """
 
-
 from __future__ import print_function, absolute_import
 
-import q
-
 import sys
+
+if __name__ == '__main__':
+    from twisted.application import reactors
+    reactors.installReactor('pyqt4')
 
 from zope.interface import implements
 from twisted.internet.interfaces import IReactorFDSet
@@ -55,23 +56,26 @@ elif qtreactor_config.get_qt_name() == "PySide":
 else:
     raise Exception("Must Have PyQt4 or PySide")
 
+
 class TwistedSocketNotifier(QtCore.QObject):
     """
     Connection between an fd event and reader/writer callbacks.
     """
 
-    def __init__(self, parent, reactor, watcher, socketType):
+    def __init__(self, parent, qt_reactor, watcher, socket_type):
         QtCore.QObject.__init__(self, parent)
-        self.reactor = reactor
+        self.qt_reactor = qt_reactor
         self.watcher = watcher
         fd = watcher.fileno()
-        self.notifier = QtCore.QSocketNotifier(fd, socketType, parent)
+        self.notifier = QtCore.QSocketNotifier(fd, socket_type, parent)
         self.notifier.setEnabled(True)
-        if socketType == QtCore.QSocketNotifier.Read:
+        if socket_type == QtCore.QSocketNotifier.Read:
             self.fn = self.read
         else:
             self.fn = self.write
-        QtCore.QObject.connect(self.notifier, QtCore.SIGNAL("activated(int)"), self.fn)
+        QtCore.QObject.connect(self.notifier,
+                               QtCore.SIGNAL("activated(int)"),
+                               self.fn)
 
     def shutdown(self):
         self.notifier.setEnabled(False)
@@ -80,7 +84,9 @@ class TwistedSocketNotifier(QtCore.QObject):
         self.notifier.deleteLater()
         self.deleteLater()
 
+    # noinspection PyUnusedLocal
     def read(self, fd):
+        self.notifier.setEnabled(False)
         if not self.watcher:
             return
         w = self.watcher
@@ -88,51 +94,45 @@ class TwistedSocketNotifier(QtCore.QObject):
         # reference to self.watcher
 
         def _read():
-            # Don't call me again, until the data has been read
-            self.notifier.setEnabled(False)
-            why = None
             try:
-                why = w.doRead()
-                inRead = True
+                data = w.doRead()
+                if data:
+                    self.qt_reactor._disconnectSelectable(w, data, True)
+                elif self.watcher:
+                    self.notifier.setEnabled(True)
             except:
-                inRead = False
                 log.err()
-                why = sys.exc_info()[1]
-            if why:
-                self.reactor._disconnectSelectable(w, why, inRead)
-            elif self.watcher:
-                # Re enable notification following sucessfull read
-                self.notifier.setEnabled(True)
-            self.reactor._iterate(None, fromqt=True)
+                self.qt_reactor._disconnectSelectable(w, sys.exc_info()[1], False)
+            self.qt_reactor._iterate(None, fromqt=True)
+
         log.callWithLogger(w, _read)
 
     def write(self, sock):
+        self.notifier.setEnabled(False)
         if not self.watcher:
             return
         w = self.watcher
 
         def _write():
-            why = None
-            self.notifier.setEnabled(False)
-
             try:
-                why = w.doWrite()
+                data = w.doWrite()
+                if data:
+                    self.qt_reactor._disconnectSelectable(w, data, False)
+                elif self.watcher:
+                    self.notifier.setEnabled(True)
             except:
                 log.err()
-                why = sys.exc_info()[1]
-            if why:
-                self.reactor._disconnectSelectable(w, why, False)
-            elif self.watcher:
-                self.notifier.setEnabled(True)
-            self.reactor._iterate(None, fromqt=True)
+                self.qt_reactor._disconnectSelectable(w, sys.exc_info()[1], False)
+            self.qt_reactor._iterate(None, fromqt=True)
+
         log.callWithLogger(w, _write)
 
 
 def msg_stub(msgType, msg):
     pass
 
+
 def msg_blast(msgType, msg):
-    q(msgType, msg)
     log.msg("Qt says: ", msgType, msg)
 
 
@@ -145,13 +145,17 @@ class QtReactor(posixbase.PosixReactorBase):
         self._notifiers = {}
         self._timer = QtCore.QTimer()
         self._timer.setSingleShot(True)
-        QtCore.QObject.connect(self._timer, QtCore.SIGNAL("timeout()"), self._qt_timeout)
+        QtCore.QObject.connect(self._timer,
+                               QtCore.SIGNAL("timeout()"),
+                               self._qt_timeout)
 
+        # noinspection PyArgumentList
         if QtCore.QCoreApplication.instance() is None:
             # Application Object has not been started yet
             self.qApp = QtCore.QCoreApplication([])
             self._ownApp = True
         else:
+            # todo, the inspector isn't happy around here
             self.qApp = QtCore.QCoreApplication.instance()
             self._ownApp = False
         self._blockApp = None
@@ -238,10 +242,8 @@ class QtReactor(posixbase.PosixReactorBase):
         self.runUntilCurrent()
         self._doIteration(delay, fromqt)
 
-    #iterate = _iterate
-
     def doIteration(self, delay=None):
-        self._doIteration( delay, False)
+        self._doIteration(delay, False)
 
     def _doIteration(self, delay, fromqt):
         """
@@ -340,6 +342,7 @@ def posixinstall():
     """
     p = QtReactor()
     from twisted.internet.main import installReactor
+
     installReactor(p)
 
 
@@ -349,15 +352,40 @@ def win32install():
     """
     p = QtEventReactor()
     from twisted.internet.main import installReactor
+
     installReactor(p)
 
 
 if runtime.platform.getType() == 'win32':
     from win32event import (WAIT_OBJECT_0, WAIT_TIMEOUT,
                             QS_ALLINPUT, QS_ALLEVENTS)
+
     install = win32install
 else:
     install = posixinstall
 
+if __name__=='__main__':
+
+    from twisted.internet import reactor
+    print("ran with: ", reactor.__module__)
+
+    trialpath = '/usr/local/bin/trial'
+    trial = open(trialpath,'r').read()
+
+    import contextlib
+    @contextlib.contextmanager
+    def redirect_argv(trials):
+        sys._argv = sys.argv[:]
+        sys.argv[:] = trials
+        yield
+        sys.argv[:] = sys._argv
+
+    with redirect_argv([trialpath,
+                        'twisted.test.test_ftp',
+                        'twisted.test.test_internet']):
+        exec trial
+        print("ran with: ", reactor.__module__)
+
 
 __all__ = ["install"]
+

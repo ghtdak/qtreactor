@@ -25,9 +25,10 @@ def redirect_argv(num):
     yield
     sys.argv[:] = sys._argv
 
+def runTrial(*trials):
+    with redirect_argv([trialpath]+list(trials)):
+        exec (trial)
 
-#sys.stdout = open('/tmp/unitspew.txt','w')
-with redirect_argv([trialpath,
-                    'twisted.test.test_ftp',
-                    'twisted.test.test_internet']):
-    exec (trial)
+if __name__ == '__main__':
+    runTrial(*['twisted.test.test_ftp',
+              'twisted.test.test_internet'])

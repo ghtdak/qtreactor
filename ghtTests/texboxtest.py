@@ -58,6 +58,7 @@ class AppForm(QMainWindow):
         self.lc.start(1.0)
 
     def clicked1(self):
+        # todo, the inspector isn't happy here either
         QMessageBox.about(self, "My message box", "Text1 = %s, Text2 = %s" % (
             self.edit1.text(), self.edit2.text()))
 
@@ -84,6 +85,7 @@ form = None
 def buildgui():
     form = AppForm()
     form.show()
+    return form
 
 if __name__ == "__main__":
     form = buildgui()
