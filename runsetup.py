@@ -10,11 +10,11 @@ import os, shutil, tempfile
 
 f = tempfile.mkdtemp(dir='/tmp')
 
-shutil.move('.idea', f)
+shutil.move('.idea', f+'/tempidea')
 
 os.system('/usr/bin/git clean -dfx')
 
-shutil.move(f, '.idea')
+shutil.move(f+'/tempidea'', '.idea')
 
 os.system('/usr/local/bin/python setup.py sdist')
 

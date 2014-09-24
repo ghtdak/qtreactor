@@ -40,6 +40,7 @@ import sys
 
 if __name__ == '__main__':
     from twisted.application import reactors
+
     reactors.installReactor('pyqt4')
 
 from zope.interface import implements
@@ -57,6 +58,7 @@ else:
     raise Exception("Must Have PyQt4 or PySide")
 
 
+# noinspection PyBroadException,PyProtectedMember
 class TwistedSocketNotifier(QtCore.QObject):
     """
     Connection between an fd event and reader/writer callbacks.
@@ -107,6 +109,7 @@ class TwistedSocketNotifier(QtCore.QObject):
 
         log.callWithLogger(w, _read)
 
+    # noinspection PyUnusedLocal
     def write(self, sock):
         self.notifier.setEnabled(False)
         if not self.watcher:
@@ -128,12 +131,13 @@ class TwistedSocketNotifier(QtCore.QObject):
         log.callWithLogger(w, _write)
 
 
-def msg_stub(msgType, msg):
+# noinspection PyUnusedLocal
+def msg_stub(msg_type, msg):
     pass
 
 
-def msg_blast(msgType, msg):
-    log.msg("Qt says: ", msgType, msg)
+def msg_blast(msg_type, msg):
+    log.msg("Qt says: ", msg_type, msg)
 
 
 class QtReactor(posixbase.PosixReactorBase):
@@ -149,13 +153,12 @@ class QtReactor(posixbase.PosixReactorBase):
                                QtCore.SIGNAL("timeout()"),
                                self._qt_timeout)
 
-        # noinspection PyArgumentList
+        # noinspection PyArgumentList,PyArgumentList
         if QtCore.QCoreApplication.instance() is None:
             # Application Object has not been started yet
             self.qApp = QtCore.QCoreApplication([])
             self._ownApp = True
         else:
-            # todo, the inspector isn't happy around here
             self.qApp = QtCore.QCoreApplication.instance()
             self._ownApp = False
         self._blockApp = None
@@ -164,7 +167,7 @@ class QtReactor(posixbase.PosixReactorBase):
 
         super(QtReactor, self).__init__()
 
-    def _add(self, xer, primary, type):
+    def _add(self, xer, primary, select_rw):
         """
         Private method for adding a descriptor from the event loop.
 
@@ -172,7 +175,7 @@ class QtReactor(posixbase.PosixReactorBase):
         for another state (read -> read/write for example).
         """
         if xer not in primary:
-            primary[xer] = TwistedSocketNotifier(None, self, xer, type)
+            primary[xer] = TwistedSocketNotifier(None, self, xer, select_rw)
 
     def addReader(self, reader):
         """
@@ -186,6 +189,7 @@ class QtReactor(posixbase.PosixReactorBase):
         """
         self._add(writer, self._writes, QtCore.QSocketNotifier.Write)
 
+    # noinspection PyMethodMayBeStatic
     def _remove(self, xer, primary):
         """
         Private method for removing a descriptor from the event loop.
@@ -224,10 +228,10 @@ class QtReactor(posixbase.PosixReactorBase):
 
     def callLater(self, howlong, *args, **kargs):
         rval = super(QtReactor, self).callLater(howlong, *args, **kargs)
-        self.reactorInvocation()
+        self.invoke_reactor()
         return rval
 
-    def reactorInvocation(self):
+    def invoke_reactor(self):
         self._timer.stop()
         self._timer.setInterval(0)
         self._timer.start()
@@ -240,12 +244,12 @@ class QtReactor(posixbase.PosixReactorBase):
         See twisted.internet.interfaces.IReactorCore.iterate.
         """
         self.runUntilCurrent()
-        self._doIteration(delay, fromqt)
+        self._do_iteration(delay, fromqt)
 
     def doIteration(self, delay=None):
-        self._doIteration(delay, False)
+        self._do_iteration(delay, False)
 
-    def _doIteration(self, delay, fromqt):
+    def _do_iteration(self, delay, fromqt):
         """
         This method is called by a Qt timer or by network activity
         on a file descriptor
@@ -267,7 +271,7 @@ class QtReactor(posixbase.PosixReactorBase):
 
     def runReturn(self, installSignalHandlers=True):
         self.startRunning(installSignalHandlers=installSignalHandlers)
-        self.reactorInvocation()
+        self.invoke_reactor()
 
     def run(self, installSignalHandlers=True):
         if self._ownApp:
@@ -303,7 +307,7 @@ class QtEventReactor(QtReactor):
             while val != WAIT_TIMEOUT:
                 val = MsgWaitForMultipleObjects(handles, 0, 0,
                                                 QS_ALLINPUT | QS_ALLEVENTS)
-                if val >= WAIT_OBJECT_0 and val < WAIT_OBJECT_0 + len(handles):
+                if WAIT_OBJECT_0 <= val < WAIT_OBJECT_0 + len(handles):
                     event_id = handles[val - WAIT_OBJECT_0]
                     if event_id in self._events:
                         fd, action = self._events[event_id]
@@ -314,6 +318,7 @@ class QtEventReactor(QtReactor):
                     # print 'Got an unexpected return of %r' % val
                     return
 
+    # noinspection PyBroadException
     def _runAction(self, action, fd):
         try:
             closed = getattr(fd, action)()
@@ -357,6 +362,7 @@ def win32install():
 
 
 if runtime.platform.getType() == 'win32':
+    # noinspection PyUnresolvedReferences
     from win32event import (WAIT_OBJECT_0, WAIT_TIMEOUT,
                             QS_ALLINPUT, QS_ALLEVENTS)
 
@@ -364,15 +370,17 @@ if runtime.platform.getType() == 'win32':
 else:
     install = posixinstall
 
-if __name__=='__main__':
-
+if __name__ == '__main__':
     from twisted.internet import reactor
+
     print("ran with: ", reactor.__module__)
 
     trialpath = '/usr/local/bin/trial'
-    trial = open(trialpath,'r').read()
+    trial = open(trialpath, 'r').read()
 
     import contextlib
+
+    # noinspection PyProtectedMember
     @contextlib.contextmanager
     def redirect_argv(trials):
         sys._argv = sys.argv[:]
@@ -386,6 +394,4 @@ if __name__=='__main__':
         exec trial
         print("ran with: ", reactor.__module__)
 
-
 __all__ = ["install"]
-
