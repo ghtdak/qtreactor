@@ -3,7 +3,7 @@ from __future__ import print_function
 from qtreactor import pyqt4reactor
 
 from PyQt4 import QtGui
-
+import sys
 app = QtGui.QApplication(sys.argv)
 pyqt4reactor.install()
 
@@ -12,13 +12,16 @@ from twisted.internet import reactor, protocol
 
 import sys
 
+def encode(s):
+    return str(s)
 
 # noinspection PyClassHasNoInit
 class IRCCore(irc.IRCClient):
     nickname = 'dosdsdssd'
 
     def connectionMade(self):
-        self.nickname = self.factory.window.nickName.text().encode('ascii')
+        #self.nickname = self.factory.window.nickName.text().encode('ascii')
+        self.nickname = encode(self.factory.window.nickName.text())
         self.factory.window.protocol = self
         irc.IRCClient.connectionMade(self)
         self.log('connected!!')
@@ -27,7 +30,7 @@ class IRCCore(irc.IRCClient):
         self.log('disconnected... :( %s' % reason)
 
     def signedOn(self):
-        charname = self.factory.window.channelName.text().encode('ascii')
+        charname = encode(self.factory.window.channelName.text())
         self.join(charname)
 
     def joined(self, channel):
@@ -127,7 +130,9 @@ class MainWindow(QtGui.QMainWindow):
 
         factory = IRCCoreFactory(self)
 
-        server_name = self.serverName.text().encode('ascii')
+        #server_name = self.serverName.text().encode('ascii')
+
+        server_name = encode(self.serverName.text())
 
         reactor.connectTCP(server_name, 6667, factory)
 
@@ -135,13 +140,15 @@ class MainWindow(QtGui.QMainWindow):
         # app.exit()
         #app.exit()
 
-        reactor.run()
+        #reactor.run()
 
     def send_message(self):
         if self.protocol:
-            chan_name = self.channelName.text().encode('ascii')
+            # chan_name = self.channelName.text().encode('ascii')
+            # message = self.entry.text().encode('ascii')
 
-            message = self.entry.text().encode('ascii')
+            chan_name = encode(self.channelName.text())
+            message = encode(self.entry.text())
 
             self.protocol.msg(chan_name, message)
 
@@ -153,9 +160,11 @@ class MainWindow(QtGui.QMainWindow):
     def closeEvent(self, event):
         print('Attempting to close the main window!')
         reactor.stop()
-        event.accept()
+        #event.accept()
 
 
 if __name__ == '__main__':
     mainWin = MainWindow()
-    sys.exit(app.exec_())
+    mainWin.connect_irc()
+    reactor.run()
+    #sys.exit(app.exec_())

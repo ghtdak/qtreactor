@@ -2,9 +2,14 @@ from __future__ import print_function
 
 import sys
 
-from twisted.application import reactors
+#from twisted.application import reactors
 
-reactors.installReactor('qt4')
+#reactors.installReactor('qt4')
+
+from qt4reactor import install
+
+install()
+
 
 from twisted.internet import reactor, task
 from twisted.python import log, runtime
